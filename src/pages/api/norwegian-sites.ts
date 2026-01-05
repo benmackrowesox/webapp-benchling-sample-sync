@@ -1,5 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next/types';
 import Papa from 'papaparse';
+import fs from 'fs';
+import path from 'path';
 import { NorwegianSite, NorwegianMapData } from '../../maps/types/site';
 import { processNorwaySiteData, getNorwayFilterOptions } from '../../maps/data/processing';
 
@@ -9,14 +11,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 	}
 
 	try {
-		// Fetch the CSV from public folder (works on Vercel serverless)
-		const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/norwegian-sites.csv`);
+		// Read CSV from public folder (works on Vercel serverless - files are in /var/task)
+		const csvPath = path.join(process.cwd(), 'norwegian-sites.csv');
 		
-		if (!response.ok) {
+		if (!fs.existsSync(csvPath)) {
 			return res.status(404).json({ error: 'Norwegian data file not found' });
 		}
 
-		const csvFile = await response.text();
+		const csvFile = fs.readFileSync(csvPath, 'utf-8');
 
 		Papa.parse(csvFile, {
 			header: true,
