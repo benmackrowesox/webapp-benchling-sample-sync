@@ -208,9 +208,13 @@ export function buildNorwayHoverText(site: NorwegianSite): string {
   const importantFields: Array<[string, string | undefined]> = [
     ['Species', site.species],
     ['Company', site.company],
-    ['Type', site.facility_type],
-    ['Stage', site.stage],
-    ['Region', site.region],
+    ['County', site.county],
+    ['Municipality', site.municipality],
+    ['Purpose', site.purpose],
+    ['Production Method', site.production_method],
+    ['Status', site.site_status],
+    ['Water Type', site.water_type],
+    ['Placement', site.placement],
   ];
   
   for (const [label, value] of importantFields) {
@@ -238,7 +242,7 @@ export function processNorwaySiteData(sites: NorwegianSite[]): NorwegianSite[] {
 export function getNorwayFilterOptions(sites: NorwegianSite[]) {
   const allSpecies: string[] = [];
   const allCompanies: string[] = [];
-  const allRegions: string[] = [];
+  const allCounties: string[] = [];
 
   sites.forEach(s => {
     if (s.species && s.species.trim()) {
@@ -247,15 +251,15 @@ export function getNorwayFilterOptions(sites: NorwegianSite[]) {
     if (s.company && s.company.trim()) {
       allCompanies.push(...splitAndTrim(s.company));
     }
-    if (s.region && s.region.trim()) {
-      allRegions.push(...splitAndTrim(s.region));
+    if (s.county && s.county.trim()) {
+      allCounties.push(...splitAndTrim(s.county));
     }
   });
 
   return {
     species: [...new Set(allSpecies)].sort(),
     companies: [...new Set(allCompanies)].sort(),
-    regions: [...new Set(allRegions)].sort(),
+    regions: [...new Set(allCounties)].sort(),
   };
 }
 

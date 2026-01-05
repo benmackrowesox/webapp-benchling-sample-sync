@@ -25,7 +25,7 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedCompany, setSelectedCompany] = useState<string>('All');
   const [selectedSpecies, setSelectedSpecies] = useState<string>('All');
-  const [selectedRegion, setSelectedRegion] = useState<string>('All');
+  const [selectedCounty, setSelectedCounty] = useState<string>('All');
 
   useEffect(() => {
     async function fetchData() {
@@ -48,10 +48,10 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
     return mapData.sites.filter(site => {
       if (selectedCompany !== 'All' && site.company !== selectedCompany) return false;
       if (selectedSpecies !== 'All' && !site.species.includes(selectedSpecies)) return false;
-      if (selectedRegion !== 'All' && site.region !== selectedRegion) return false;
+      if (selectedCounty !== 'All' && site.county !== selectedCounty) return false;
       return true;
     });
-  }, [mapData, selectedCompany, selectedSpecies, selectedRegion]);
+  }, [mapData, selectedCompany, selectedSpecies, selectedCounty]);
 
   const companyColorIndex = useMemo(() => {
     if (!mapData) return new Map<string, number>();
@@ -117,9 +117,9 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
         </FormControl>
 
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-          <InputLabel>Region</InputLabel>
-          <Select value={selectedRegion} label="Region" onChange={(e) => setSelectedRegion(e.target.value)}>
-            <MenuItem value="All">All Regions</MenuItem>
+          <InputLabel>County</InputLabel>
+          <Select value={selectedCounty} label="County" onChange={(e) => setSelectedCounty(e.target.value)}>
+            <MenuItem value="All">All Counties</MenuItem>
             {mapData.filters.regions.map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
           </Select>
         </FormControl>
