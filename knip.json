@@ -1,0 +1,5 @@
+{
+  "entry": ["src/pages/_document.tsx"],
+  "project": ["**/*.tsx"],
+  "ignore": ["src/icons/**"]
+}
