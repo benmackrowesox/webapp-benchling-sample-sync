@@ -2,10 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next/types';
 import Papa from 'papaparse';
 import fs from 'fs';
 import path from 'path';
-import { AquacultureSite, MapData } from '../../types/site';
-import { processSiteData, getFilterOptions } from '../../utils/dataProcessing';
+import { NorwegianSite, NorwegianMapData } from '../../maps/types/site';
+import { processNorwaySiteData, getNorwayFilterOptions } from '../../maps/data/processing';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<MapData | { error: string }>) {
+export default function handler(req: NextApiRequest, res: NextApiResponse<NorwegianMapData | { error: string }>) {
 	if (req.method !== 'GET') {
 		return res.status(405).json({ error: 'Method not allowed' });
 	}
@@ -22,11 +22,11 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<MapDat
 			header: true,
 			skipEmptyLines: true,
 			complete: (results) => {
-				const sites = results.data as AquacultureSite[];
-				const processedSites = processSiteData(sites);
-				const filters = getFilterOptions(processedSites);
+				const sites = results.data as NorwegianSite[];
+				const processedSites = processNorwaySiteData(sites);
+				const filters = getNorwayFilterOptions(processedSites);
 
-				const mapData: MapData = {
+				const mapData: NorwegianMapData = {
 					sites: processedSites,
 					filters,
 					totalCount: processedSites.length,
@@ -43,3 +43,4 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<MapDat
 		res.status(500).json({ error: 'Failed to load Norwegian site data' });
 	}
 }
+
