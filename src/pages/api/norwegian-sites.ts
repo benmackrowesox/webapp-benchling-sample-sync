@@ -1,22 +1,22 @@
 import { NextApiRequest, NextApiResponse } from 'next/types';
 import Papa from 'papaparse';
-import fs from 'fs';
-import path from 'path';
 import { NorwegianSite, NorwegianMapData } from '../../maps/types/site';
 import { processNorwaySiteData, getNorwayFilterOptions } from '../../maps/data/processing';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse<NorwegianMapData | { error: string }>) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse<NorwegianMapData | { error: string }>) {
 	if (req.method !== 'GET') {
 		return res.status(405).json({ error: 'Method not allowed' });
 	}
 
 	try {
-		const csvPath = path.join(process.cwd(), 'Norweigan_aquaculture_site_locations_030126.csv');
-		if (!fs.existsSync(csvPath)) {
+		// Fetch the CSV from public folder (works on Vercel serverless)
+		const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/norwegian-sites.csv`);
+		
+		if (!response.ok) {
 			return res.status(404).json({ error: 'Norwegian data file not found' });
 		}
 
-		const csvFile = fs.readFileSync(csvPath, 'utf-8');
+		const csvFile = await response.text();
 
 		Papa.parse(csvFile, {
 			header: true,
