@@ -100,6 +100,6 @@ export interface MapRegion {
   name: 'uk' | 'iceland' | 'norway';
   displayName: string;
   dataFile: string;
-  type: typeof AquacultureSite | typeof IcelandSite | typeof NorwegianSite;
+  type: AquacultureSite | IcelandSite | NorwegianSite;
 }
 
