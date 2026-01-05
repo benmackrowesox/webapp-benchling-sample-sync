@@ -3,18 +3,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, Paper, FormControl, InputLabel, Select, MenuItem, Chip } from '@mui/material';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
-import { AquacultureSite, MapData } from '../types/site';
+import { MapData } from '../types/site';
 import { createCompanyColorIndex, getCompanyColor } from '../data/processing';
 import 'leaflet/dist/leaflet.css';
-
-import L from 'leaflet';
-
-const DefaultIcon = L.icon({
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
 
 interface AquacultureMapLeafletProps {
   height?: number | string;
