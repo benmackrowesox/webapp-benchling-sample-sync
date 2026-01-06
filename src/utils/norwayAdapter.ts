@@ -162,31 +162,27 @@ export const NORWEGIAN_SPECIES_TRANSLATIONS: Record<string, string> = {
 
 /**
  * Translate a single species name from Norwegian to English
- * Returns undefined if no translation is available
+ * Returns the original name if no translation is available
  */
-export function translateSpecies(norwegianName: string): string | undefined {
-  if (!norwegianName || !norwegianName.trim()) return undefined;
-  return NORWEGIAN_SPECIES_TRANSLATIONS[norwegianName.trim()];
+export function translateSpecies(norwegianName: string): string {
+  if (!norwegianName || !norwegianName.trim()) return '';
+  return NORWEGIAN_SPECIES_TRANSLATIONS[norwegianName.trim()] || norwegianName.trim();
 }
 
 /**
  * Translate a comma/semicolon/pipe-separated species string to English
- * Returns empty string if no species could be translated
  */
 export function translateSpeciesString(speciesString: string): string {
   if (!speciesString || !speciesString.trim()) return '';
-
+  
   // Split by comma, semicolon, or pipe
   const species = speciesString
     .split(/[;,|]/)
     .map(s => s.trim())
     .filter(s => s !== '');
-
-  // Only include species that have translations
-  const translated = species
-    .map(translateSpecies)
-    .filter((t): t is string => t !== undefined);
-
+  
+  const translated = species.map(translateSpecies);
+  
   // Rejoin with comma
   return translated.join(', ');
 }
