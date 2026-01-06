@@ -1,6 +1,5 @@
 // Adapter for loading Norwegian aquaculture site data from CSV
 import { NorwegianSite, NorwegianFilterOptions, NorwegianMapData } from '../maps/types/site';
-import { getNorwayFilterOptions } from '../maps/data/processing';
 
 /**
  * Parse a number from a string, handling commas as thousand separators
@@ -271,7 +270,39 @@ export async function loadNorwegianMapData(csvPath: string): Promise<NorwegianMa
       !isNaN(site.latitude as number) &&
       !isNaN(site.longitude as number)
     );
-    const filters = getNorwayFilterOptions(validSites);
+    
+    // Generate filter options
+    const allSpecies: string[] = [];
+    const allCompanies: string[] = [];
+    const allCounties: string[] = [];
+    const allWatertypes: string[] = [];
+
+    validSites.forEach(s => {
+      if (s.species && s.species.trim()) {
+        const species = s.species.split(/[;,|]/).map(sp => sp.trim()).filter(sp => sp !== '');
+        allSpecies.push(...species);
+      }
+      if (s.company && s.company.trim()) {
+        const companies = s.company.split(/[;,|]/).map(c => c.trim()).filter(c => c !== '' && c !== 'N/A');
+        allCompanies.push(...companies);
+      }
+      if (s.county && s.county.trim()) {
+        const counties = s.county.split(/[;,|]/).map(c => c.trim()).filter(c => c !== '' && c !== 'N/A');
+        allCounties.push(...counties);
+      }
+      if (s.water_type && s.water_type.trim()) {
+        const watertypes = s.water_type.split(/[;,|]/).map(w => w.trim()).filter(w => w !== '' && w !== 'N/A');
+        allWatertypes.push(...watertypes);
+      }
+    });
+
+    const filters: NorwegianFilterOptions = {
+      species: [...new Set(allSpecies)].sort(),
+      companies: [...new Set(allCompanies)].sort(),
+      watertypes: [...new Set(allWatertypes)].sort(),
+      regions: [...new Set(allCounties)].sort(),
+    };
+    
     return {
       sites: validSites,
       filters,

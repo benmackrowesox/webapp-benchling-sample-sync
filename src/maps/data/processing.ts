@@ -2,7 +2,6 @@
 
 import proj4 from 'proj4';
 import { AquacultureSite, IcelandSite, NorwegianSite, NorwegianFilterOptions } from '../types/site';
-import { translateSpeciesString } from '../utils/norwayAdapter';
 
 // Define the coordinate transformation: British National Grid (EPSG:27700) → WGS84 (EPSG:4326)
 const BNG_TO_WGS84 = '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellp=airy +datum=OSGB36 +units=m +no_defs';
