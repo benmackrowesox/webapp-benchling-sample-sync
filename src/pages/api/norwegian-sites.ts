@@ -14,8 +14,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 		// On Vercel, files from public/ are copied to the root of the Lambda (/var/task)
 		// On local dev, they stay in public/ subfolder
 		const possiblePaths = [
-			path.join(process.cwd(), 'norwegian-sites.csv'), // Vercel: root
-			path.join(process.cwd(), '..', 'public', 'norwegian-sites.csv'), // Local dev alternative
+			path.join(process.cwd(), 'Norweigan_aquaculture_site_locations_030126.csv'), // Root of project
+			path.join(process.cwd(), '..', 'public', 'Norweigan_aquaculture_site_locations_030126.csv'), // Local dev alternative
+			path.join(process.cwd(), 'norwegian-sites.csv'), // Legacy fallback
+			path.join(process.cwd(), '..', 'public', 'norwegian-sites.csv'), // Legacy fallback
 		];
 		
 		let csvPath: string | null = null;
