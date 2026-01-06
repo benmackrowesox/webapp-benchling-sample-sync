@@ -63,9 +63,16 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
   const filteredSites = useMemo(() => {
     if (!mapData) return [];
     let filtered = mapData.sites;
-    if (selectedSpecies !== 'All') filtered = filtered.filter(s => s.species === selectedSpecies);
-    if (selectedCompany !== 'All') filtered = filtered.filter(s => s.company === selectedCompany);
-    if (selectedWatertype !== 'All') filtered = filtered.filter(s => s.water_type === selectedWatertype);
+    // Use includes() to match species within comma-separated lists (e.g., "Salmon, Trout, Rainbow Trout")
+    if (selectedSpecies !== 'All') {
+      filtered = filtered.filter(s => s.species && s.species.includes(selectedSpecies));
+    }
+    if (selectedCompany !== 'All') {
+      filtered = filtered.filter(s => s.company && s.company.includes(selectedCompany));
+    }
+    if (selectedWatertype !== 'All') {
+      filtered = filtered.filter(s => s.water_type && s.water_type.includes(selectedWatertype));
+    }
     return filtered;
   }, [mapData, selectedSpecies, selectedCompany, selectedWatertype]);
 
