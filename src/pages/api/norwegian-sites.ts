@@ -34,7 +34,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
 		const csvFile = fs.readFileSync(csvPath, 'utf-8');
 
-		Papa.parse(csvFile, {
+		// Strip BOM (Byte Order Mark) from the beginning of the file if present
+		const csvContent = csvFile.startsWith('\uFEFF') ? csvFile.slice(1) : csvFile;
+
+		Papa.parse(csvContent, {
 			header: true,
 			skipEmptyLines: true,
 			complete: (results) => {
