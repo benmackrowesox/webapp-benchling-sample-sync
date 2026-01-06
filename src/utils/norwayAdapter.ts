@@ -141,8 +141,6 @@ export const NORWEGIAN_SPECIES_TRANSLATIONS: Record<string, string> = {
   'Calanus hyperboreus **': 'Calanus hyperboreus (Copepod)',
   'Chalky macoma *': 'Chalky Macoma (Bivalve)',
   'Common shrimp *': 'Common Shrimp',
-  'Dvergreke': 'Dwarf Shrimp',
-  'Dvergulke': 'Pygmy Sculpin',
   'Dypvannsreke': 'Deep Water Shrimp',
   'Eurytemora spp **': 'Eurytemora spp. (Copepod)',
   'Eusirus holmii **': 'Eusirus holmii (Amphipod)',
