@@ -104,7 +104,7 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
           <InputLabel>Company</InputLabel>
           <Select value={selectedCompany} label="Company" onChange={(e) => setSelectedCompany(e.target.value)}>
             <MenuItem value="All">All Companies</MenuItem>
-            {mapData.filters.companies.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
+            {(mapData.filters.companies || []).map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
           </Select>
         </FormControl>
 
@@ -112,7 +112,7 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
           <InputLabel>Species</InputLabel>
           <Select value={selectedSpecies} label="Species" onChange={(e) => setSelectedSpecies(e.target.value)}>
             <MenuItem value="All">All Species</MenuItem>
-            {mapData.filters.species.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
+            {(mapData.filters.species || []).map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
           </Select>
         </FormControl>
 
@@ -120,7 +120,7 @@ export default function NorwegianMap({ height = 600 }: NorwegianMapProps) {
           <InputLabel>County</InputLabel>
           <Select value={selectedCounty} label="County" onChange={(e) => setSelectedCounty(e.target.value)}>
             <MenuItem value="All">All Counties</MenuItem>
-            {mapData.filters.regions.map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+            {(mapData.filters.regions || []).map(r => <MenuItem key={r} value={r}>{r}</MenuItem>)}
           </Select>
         </FormControl>
 
