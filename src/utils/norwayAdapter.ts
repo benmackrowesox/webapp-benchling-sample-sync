@@ -117,8 +117,6 @@ export const NORWEGIAN_SPECIES_TRANSLATIONS: Record<string, string> = {
   'Nordlig knurrulke': 'Northern Searobin',
   'Nordlig lysprikkfisk': 'Northern Lanternfish',
   'Polartorsk': 'Polar Cod',
-  'Anemoneeremittkreps': 'Anemone Hermit Crab',
-  'Annen røye': 'Other Char',
   'Ansjos': 'Anchovy',
   'Marmorkrabbe': 'Marbled Crab',
   'Gitarpyntekrabbe': 'Guitar Crab',
