@@ -161,7 +161,7 @@ export const NORWEGIAN_SPECIES_TRANSLATIONS: Record<string, string> = {
   'Pseudocalanus acuspes **': 'Pseudocalanus acuspes (Copepod)',
   'Pseudocalanus minutus **': 'Pseudocalanus minutus (Copepod)',
   'Bernakereremittkreps': 'Bernacle Hermit Crab',
-  'Martaum': 'Mare's Tail',
+  'Martaum': "Mare's Tail",
   'Knapptang': 'Knopweed',
 };
 
