@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { Box, FormControl, InputLabel, Select, MenuItem, Typography, Paper, Chip, useMediaQuery, useTheme, IconButton, Drawer } from '@mui/material';
+import { Box, FormControl, InputLabel, Select, MenuItem, Typography, Paper, useMediaQuery, useTheme, IconButton, Drawer, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import dynamic from 'next/dynamic';
@@ -164,9 +164,9 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
       {/* Mobile filter button */}
       {isMobile && (
         <Box sx={{ p: 1, borderBottom: 1, borderColor: 'divider' }}>
-          <IconButton onClick={() => setFilterDrawerOpen(true)} fullWidth variant="outlined">
-            <MenuIcon /> Filters
-          </IconButton>
+          <Button onClick={() => setFilterDrawerOpen(true)} fullWidth variant="outlined" startIcon={<MenuIcon />}>
+            Filters
+          </Button>
         </Box>
       )}
 
