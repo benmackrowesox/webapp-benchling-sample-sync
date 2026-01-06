@@ -85,8 +85,8 @@ export interface NorwegianSite {
   municipality_id: string;
   municipality: string;
   production_area_code: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   symbol: string;
   species: string;
   company: string;
@@ -101,6 +101,7 @@ export interface NorwegianSite {
 export interface NorwegianFilterOptions {
   species: string[];
   companies: string[];
+  watertypes: string[];
   regions: string[];
 }
 

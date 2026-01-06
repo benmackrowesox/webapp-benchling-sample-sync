@@ -1,7 +1,7 @@
 // Data processing utilities for aquaculture site maps
 
 import proj4 from 'proj4';
-import { AquacultureSite, IcelandSite, NorwegianSite } from '../types/site';
+import { AquacultureSite, IcelandSite, NorwegianSite, NorwegianFilterOptions } from '../types/site';
 
 // Define the coordinate transformation: British National Grid (EPSG:27700) → WGS84 (EPSG:4326)
 const BNG_TO_WGS84 = '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellp=airy +datum=OSGB36 +units=m +no_defs';
@@ -239,10 +239,11 @@ export function processNorwaySiteData(sites: NorwegianSite[]): NorwegianSite[] {
 /**
  * Get unique values for Norwegian site filtering
  */
-export function getNorwayFilterOptions(sites: NorwegianSite[]) {
+export function getNorwayFilterOptions(sites: NorwegianSite[]): NorwegianFilterOptions {
   const allSpecies: string[] = [];
   const allCompanies: string[] = [];
   const allCounties: string[] = [];
+  const allWatertypes: string[] = [];
 
   sites.forEach(s => {
     if (s.species && s.species.trim()) {
@@ -254,11 +255,15 @@ export function getNorwayFilterOptions(sites: NorwegianSite[]) {
     if (s.county && s.county.trim()) {
       allCounties.push(...splitAndTrim(s.county));
     }
+    if (s.water_type && s.water_type.trim()) {
+      allWatertypes.push(...splitAndTrim(s.water_type));
+    }
   });
 
   return {
     species: [...new Set(allSpecies)].sort(),
     companies: [...new Set(allCompanies)].sort(),
+    watertypes: [...new Set(allWatertypes)].sort(),
     regions: [...new Set(allCounties)].sort(),
   };
 }

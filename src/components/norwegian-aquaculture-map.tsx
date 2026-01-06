@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Box, FormControl, InputLabel, Select, MenuItem, Typography, Paper, Chip } from '@mui/material';
 import dynamic from 'next/dynamic';
-import { MapData } from '../types/site';
-import { createCompanyColorIndex, getCompanyColor, buildHoverText } from '../utils/dataProcessing';
+import type { NorwegianMapData } from '../maps/types/site';
+import { createCompanyColorIndex, getCompanyColor } from '../utils/dataProcessing';
+import { buildNorwayHoverText } from '../maps/data/processing';
+import { loadNorwegianMapData } from '../utils/norwayAdapter';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -33,7 +35,7 @@ interface Props {
 }
 
 export default function NorwegianAquacultureMap({ height = 600 }: Props) {
-  const [mapData, setMapData] = useState<MapData | null>(null);
+  const [mapData, setMapData] = useState<NorwegianMapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSpecies, setSelectedSpecies] = useState<string>('All');
@@ -41,19 +43,21 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
   const [selectedWatertype, setSelectedWatertype] = useState<string>('All');
 
   useEffect(() => {
-    async function fetchData() {
+    let mounted = true;
+    (async () => {
       try {
-        const res = await fetch('/api/norwegian-sites');
-        if (!res.ok) throw new Error('Failed to fetch Norwegian data');
-        const data = await res.json();
+        const data = await loadNorwegianMapData('/norwegian-sites-2.csv');
+        if (!mounted) return;
         setMapData(data);
       } catch (err: any) {
-        setError(err.message || 'An error occurred');
+        if (!mounted) return;
+        setError(err.message || 'Failed to load Norwegian data');
       } finally {
+        if (!mounted) return;
         setLoading(false);
       }
-    }
-    fetchData();
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const filteredSites = useMemo(() => {
@@ -61,7 +65,7 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
     let filtered = mapData.sites;
     if (selectedSpecies !== 'All') filtered = filtered.filter(s => s.species === selectedSpecies);
     if (selectedCompany !== 'All') filtered = filtered.filter(s => s.company === selectedCompany);
-    if (selectedWatertype !== 'All') filtered = filtered.filter(s => s.watertype === selectedWatertype);
+    if (selectedWatertype !== 'All') filtered = filtered.filter(s => s.water_type === selectedWatertype);
     return filtered;
   }, [mapData, selectedSpecies, selectedCompany, selectedWatertype]);
 
@@ -128,7 +132,7 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
           <InputLabel>Water Type</InputLabel>
           <Select value={selectedWatertype} label="Water Type" onChange={(e) => setSelectedWatertype(e.target.value)}>
             <MenuItem value="All">All Water Types</MenuItem>
-            {mapData.filters.watertypes.map(w => <MenuItem key={w} value={w}>{w}</MenuItem>)}
+            {(mapData.filters.watertypes || []).map((w: string) => <MenuItem key={w} value={w}>{w}</MenuItem>)}
           </Select>
         </FormControl>
 
@@ -150,13 +154,13 @@ export default function NorwegianAquacultureMap({ height = 600 }: Props) {
                 const color = getCompanyColor(site.company, companyColorIndex);
                 return (
                   <CircleMarker
-                    key={`${site.facility_id || site.site_name}-${idx}`}
+                    key={`${site.site_id || site.site_name}-${idx}`}
                     center={[site.latitude, site.longitude]}
                     radius={8}
                     pathOptions={{ color, fillColor: color, fillOpacity: 0.85, weight: 2 }}
                   >
                     <Popup>
-                      <div dangerouslySetInnerHTML={{ __html: buildHoverText(site) }} />
+                      <div dangerouslySetInnerHTML={{ __html: buildNorwayHoverText(site) }} />
                     </Popup>
                   </CircleMarker>
                 );
