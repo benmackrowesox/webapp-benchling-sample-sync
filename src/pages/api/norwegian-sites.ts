@@ -11,10 +11,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 	}
 
 	try {
-		// Read CSV from public folder (works on Vercel serverless - files are in /var/task)
-		const csvPath = path.join(process.cwd(), 'norwegian-sites.csv');
+		// On Vercel, files from public/ are copied to the root of the Lambda (/var/task)
+		// On local dev, they stay in public/ subfolder
+		const possiblePaths = [
+			path.join(process.cwd(), 'norwegian-sites.csv'), // Vercel: root
+			path.join(process.cwd(), '..', 'public', 'norwegian-sites.csv'), // Local dev alternative
+		];
 		
-		if (!fs.existsSync(csvPath)) {
+		let csvPath: string | null = null;
+		for (const p of possiblePaths) {
+			if (fs.existsSync(p)) {
+				csvPath = p;
+				break;
+			}
+		}
+		
+		if (!csvPath) {
 			return res.status(404).json({ error: 'Norwegian data file not found' });
 		}
 
