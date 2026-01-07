@@ -39,13 +39,154 @@ export function osGridToLatLon(easting: number, northing: number): { lat: number
 }
 
 /**
- * Clean up species name by removing numeric prefixes and extra whitespace
- * e.g., "1 American Oyster" -> "American Oyster", "Atlantic salmon" -> "Atlantic salmon"
+ * Species name normalization mappings
+ * Maps various spellings/capitalizations to canonical names
+ */
+const SPECIES_NORMALIZATIONS: Record<string, string> = {
+  'atlantic salmon': 'Atlantic Salmon',
+  'atlanticsalmon': 'Atlantic Salmon',
+  'atlantic salmon (salmo salar)': 'Atlantic Salmon',
+  'salmo salar': 'Atlantic Salmon',
+  'salmo salar (atlantic salmon)': 'Atlantic Salmon',
+  'american oyster': 'American Oyster',
+  'crassostrea virginica': 'American Oyster',
+  'eastern oyster': 'American Oyster',
+  'quahog': 'Quahog',
+  'hard clam': 'Quahog',
+  'mercenaria mercenaria': 'Quahog',
+  'chinook salmon': 'Chinook Salmon',
+  'coho salmon': 'Coho Salmon',
+  'pink salmon': 'Pink Salmon',
+  'chum salmon': 'Chum Salmon',
+  'sockeye salmon': 'Sockeye Salmon',
+  'sockeye': 'Sockeye Salmon',
+  'rainbow trout': 'Rainbow Trout',
+  'oncorhynchus mykiss': 'Rainbow Trout',
+  'steelhead trout': 'Rainbow Trout',
+  'mussels': 'Mussel',
+  'blue mussel': 'Blue Mussel',
+  'mytilus edulis': 'Blue Mussel',
+  'mytilus galloprovincialis': 'Mediterranean Mussel',
+  'sea scallop': 'Sea Scallop',
+  'placopecten magellanicus': 'Sea Scallop',
+  'bay scallop': 'Bay Scallop',
+  'argopecten irradians': 'Bay Scallop',
+  'lobster': 'American Lobster',
+  'homarus americanus': 'American Lobster',
+  'cod': 'Atlantic Cod',
+  'gadus morhua': 'Atlantic Cod',
+  'haddock': 'Haddock',
+  'melanogrammus aeglefinus': 'Haddock',
+  'halibut': 'Atlantic Halibut',
+  'hippoglossus hippoglossus': 'Atlantic Halibut',
+  'sole': 'Dover Sole',
+  'solea solea': 'Dover Sole',
+  'turbot': 'Turbot',
+  'scophthalmus maximus': 'Turbot',
+  'herring': 'Atlantic Herring',
+  'clupea harengus': 'Atlantic Herring',
+  'sprat': 'Sprat',
+  'capelin': 'Capelin',
+  'mallotus villosus': 'Capelin',
+  'eel': 'American Eel',
+  'anguilla rostrata': 'American Eel',
+  'sturgeon': 'Sturgeon',
+  'white sturgeon': 'White Sturgeon',
+  'lake sturgeon': 'Lake Sturgeon',
+  'oyster': 'Oyster',
+  'clams': 'Clam',
+  'softshell clam': 'Softshell Clam',
+  'mya arenaria': 'Softshell Clam',
+  'razor clam': 'Razor Clam',
+  'geoduck': 'Geoduck',
+  'panopea generosa': 'Geoduck',
+  'kelp': 'Kelp',
+  'seaweed': 'Seaweed',
+  'alaria esculenta': 'Alaria',
+  'laminaria': 'Laminaria',
+  'sugar kelp': 'Sugar Kelp',
+  'winged kelp': 'Winged Kelp',
+  'rockweed': 'Rockweed',
+  'ascophyllum nodosum': 'Rockweed',
+  'fucus vesiculosus': 'Bladder Wrack',
+  'wrack': 'Wrack',
+};
+
+/**
+ * Clean up species name by removing numeric prefixes and normalizing variations
+ * e.g., "1 American Oyster" -> "American Oyster", "atlantic salmon" -> "Atlantic Salmon"
  */
 export function cleanSpeciesName(speciesName: string): string {
   // Remove leading numbers and whitespace (e.g., "1 ", "2 ", "10 ")
-  const cleaned = speciesName.replace(/^\d+\s*/, '').trim();
-  return cleaned;
+  let cleaned = speciesName.replace(/^\d+\s*/, '').trim();
+  
+  // Convert to lowercase for case-insensitive matching
+  const lower = cleaned.toLowerCase();
+  
+  // Check if this species has a normalized form
+  if (SPECIES_NORMALIZATIONS[lower]) {
+    return SPECIES_NORMALIZATIONS[lower];
+  }
+  
+  // If no direct match, try to find partial matches for common species
+  // This handles cases like "Atlantic Salmon, Rainbow Trout" that are already split
+  if (lower.includes('atlantic') && lower.includes('salmon')) {
+    return 'Atlantic Salmon';
+  }
+  if (lower.includes('american') && lower.includes('oyster')) {
+    return 'American Oyster';
+  }
+  if (lower.includes('quahog')) {
+    return 'Quahog';
+  }
+  if (lower.includes('chinook')) {
+    return 'Chinook Salmon';
+  }
+  if (lower.includes('coho')) {
+    return 'Coho Salmon';
+  }
+  if (lower.includes('sockeye')) {
+    return 'Sockeye Salmon';
+  }
+  if (lower.includes('chum')) {
+    return 'Chum Salmon';
+  }
+  if (lower.includes('pink')) {
+    return 'Pink Salmon';
+  }
+  if (lower.includes('rainbow') || lower.includes('steelhead')) {
+    return 'Rainbow Trout';
+  }
+  if (lower.includes('mussel')) {
+    return 'Mussel';
+  }
+  if (lower.includes('clams') || lower.includes('clam')) {
+    return 'Clam';
+  }
+  if (lower.includes('lobster')) {
+    return 'American Lobster';
+  }
+  if (lower.includes('scallop')) {
+    return 'Sea Scallop';
+  }
+  if (lower.includes('cod')) {
+    return 'Atlantic Cod';
+  }
+  if (lower.includes('haddock')) {
+    return 'Haddock';
+  }
+  if (lower.includes('halibut')) {
+    return 'Atlantic Halibut';
+  }
+  if (lower.includes('herring')) {
+    return 'Atlantic Herring';
+  }
+  
+  // Capitalize first letter of each word if no normalization found
+  return cleaned
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
 }
 
 /**
