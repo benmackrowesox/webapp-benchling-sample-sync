@@ -39,6 +39,16 @@ export function osGridToLatLon(easting: number, northing: number): { lat: number
 }
 
 /**
+ * Clean up species name by removing numeric prefixes and extra whitespace
+ * e.g., "1 American Oyster" -> "American Oyster", "Atlantic salmon" -> "Atlantic salmon"
+ */
+export function cleanSpeciesName(speciesName: string): string {
+  // Remove leading numbers and whitespace (e.g., "1 ", "2 ", "10 ")
+  const cleaned = speciesName.replace(/^\d+\s*/, '').trim();
+  return cleaned;
+}
+
+/**
  * Extract individual species from a comma-separated species string
  * e.g., "Char, Salmon" -> ["Char", "Salmon"]
  */
@@ -47,6 +57,20 @@ export function extractSpecies(speciesString: string): string[] {
     return [];
   }
   return speciesString.split(',').map(s => s.trim()).filter(s => s !== '');
+}
+
+/**
+ * Extract individual species from Canadian site data and clean up names
+ * Handles comma-separated species and removes numeric prefixes
+ */
+function extractAndCleanSpecies(speciesString: string): string[] {
+  if (!speciesString || !speciesString.trim()) {
+    return [];
+  }
+  return speciesString
+    .split(/[,;&]/)  // Split by comma, semicolon, or ampersand
+    .map(s => cleanSpeciesName(s.trim()))
+    .filter(s => s !== '' && s !== 'N/A' && s.toLowerCase() !== 'unknown');
 }
 
 /**
@@ -435,9 +459,9 @@ export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterO
   const allActivityTypes: string[] = [];
 
   sites.forEach(s => {
-    // Species
+    // Species - use extractAndCleanSpecies to handle numeric prefixes and split properly
     if (s.species && s.species.trim()) {
-      const individualSpecies = extractSpecies(s.species);
+      const individualSpecies = extractAndCleanSpecies(s.species);
       allSpecies.push(...individualSpecies);
     }
     
