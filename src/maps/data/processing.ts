@@ -1,7 +1,7 @@
 // Data processing utilities for aquaculture site maps
 
 import proj4 from 'proj4';
-import { AquacultureSite, IcelandSite, NorwegianSite, NorwegianFilterOptions } from '../types/site';
+import { AquacultureSite, IcelandSite, NorwegianSite, NorwegianFilterOptions, CanadianSite, CanadianFilterOptions } from '../types/site';
 
 // Define the coordinate transformation: British National Grid (EPSG:27700) → WGS84 (EPSG:4326)
 const BNG_TO_WGS84 = '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellp=airy +datum=OSGB36 +units=m +no_defs';
@@ -287,5 +287,187 @@ export function createCompanyColorIndex(companies: string[]): Map<string, number
     indexMap.set(company, index);
   });
   return indexMap;
+}
+
+// ============ Canadian Site Processing ============
+
+/**
+ * Convert Degrees Minutes Seconds (DMS) to Decimal Degrees (DD)
+ * Handles formats like: "45° 56' 28.865"", "-61° 3' 48.615"""
+ */
+export function dmsToDecimalDegrees(dmsString: string): number | undefined {
+  if (!dmsString || dmsString.trim() === '') {
+    return undefined;
+  }
+  
+  // Remove quotes and extra whitespace
+  const cleaned = dmsString.replace(/["']/g, ' ').trim();
+  
+  // Parse DMS components
+  const parts = cleaned.split(/[°\'\s]+/).filter(p => p.trim() !== '');
+  
+  if (parts.length < 2) {
+    return undefined;
+  }
+  
+  const degrees = parseFloat(parts[0]);
+  const minutes = parts.length > 1 ? parseFloat(parts[1]) : 0;
+  const seconds = parts.length > 2 ? parseFloat(parts[2]) : 0;
+  
+  const decimal = degrees + (minutes / 60) + (seconds / 3600);
+  
+  return isNaN(decimal) ? undefined : decimal;
+}
+
+/**
+ * Convert Web Mercator (EPSG:3857) to WGS84 (EPSG:4326)
+ */
+export function webMercatorToWgs84(x: number, y: number): { lat: number; lon: number } {
+  const lon = (x / 20037508.34) * 180;
+  let lat = (y / 20037508.34) * 180;
+  lat = 180 / Math.PI * (2 * Math.atan(Math.exp(lat * Math.PI / 180)) - Math.PI / 2);
+  return { lat, lon };
+}
+
+/**
+ * Parse Nova Scotia latitude from DMS format
+ */
+export function parseNovaScotiaLatitude(dmsString: string): number | undefined {
+  const decimal = dmsToDecimalDegrees(dmsString);
+  return decimal;
+}
+
+/**
+ * Parse Nova Scotia longitude from DMS format (always negative for Western hemisphere)
+ */
+export function parseNovaScotiaLongitude(dmsString: string): number | undefined {
+  const decimal = dmsToDecimalDegrees(dmsString);
+  return decimal !== undefined ? -Math.abs(decimal) : undefined;
+}
+
+/**
+ * Build hover text for a Canadian site
+ */
+export function buildCanadianHoverText(site: CanadianSite): string {
+  const parts: string[] = [];
+  
+  // Header with site name/location
+  if (site.location && site.location.trim() !== '') {
+    parts.push(`<b>${site.location}</b>`);
+  } else if (site.site_id) {
+    parts.push(`<b>Site ${site.site_id}</b>`);
+  }
+  
+  // Common fields
+  if (site.province) {
+    parts.push(`Province: ${site.province}`);
+  }
+  if (site.company && site.company.trim() !== '') {
+    parts.push(`Company: ${site.company}`);
+  }
+  if (site.species && site.species.trim() !== '') {
+    parts.push(`Species: ${site.species}`);
+  }
+  if (site.species_type && site.species_type.trim() !== '') {
+    parts.push(`Type: ${site.species_type}`);
+  }
+  
+  // Province-specific fields
+  if (site.cultivation_method && site.cultivation_method.trim() !== '') {
+    parts.push(`Cultivation: ${site.cultivation_method}`);
+  }
+  if (site.site_size_ha) {
+    parts.push(`Size: ${site.site_size_ha} HA`);
+  }
+  if (site.hectares) {
+    parts.push(`Hectares: ${site.hectares}`);
+  }
+  if (site.activity_type && site.activity_type.trim() !== '') {
+    parts.push(`Activity: ${site.activity_type}`);
+  }
+  if (site.site_status && site.site_status.trim() !== '') {
+    parts.push(`Status: ${site.site_status}`);
+  }
+  if (site.county && site.county.trim() !== '') {
+    parts.push(`County: ${site.county}`);
+  }
+  if (site.tenure && site.tenure.trim() !== '') {
+    parts.push(`Tenure: ${site.tenure}`);
+  }
+  if (site.expiry_date && site.expiry_date.trim() !== '') {
+    parts.push(`Expires: ${site.expiry_date}`);
+  }
+  
+  return parts.join('<br>');
+}
+
+/**
+ * Process raw Canadian site data from any province
+ */
+export function processCanadianSiteData(sites: CanadianSite[]): CanadianSite[] {
+  return sites.map(site => {
+    // Ensure province is set
+    if (!site.province) {
+      site.province = 'Unknown';
+    }
+    
+    // Parse coordinates for Nova Scotia (DMS format)
+    if (site.province.toLowerCase() === 'nova scotia' && !site.latitude) {
+      // The CSV has lat/lon as DMS in string format - this would need parsing
+      // but the current data structure stores them as pre-parsed numbers
+    }
+    
+    // Generate hover text
+    site.hover_text = buildCanadianHoverText(site);
+    
+    return site;
+  });
+}
+
+/**
+ * Get unique values for Canadian site filtering
+ */
+export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterOptions {
+  const allSpecies: string[] = [];
+  const allCompanies: string[] = [];
+  const allProvinces: string[] = [];
+  const allSpeciesTypes: string[] = [];
+  const allActivityTypes: string[] = [];
+
+  sites.forEach(s => {
+    // Species
+    if (s.species && s.species.trim()) {
+      const individualSpecies = extractSpecies(s.species);
+      allSpecies.push(...individualSpecies);
+    }
+    
+    // Companies
+    if (s.company && s.company.trim()) {
+      allCompanies.push(...splitAndTrim(s.company));
+    }
+    
+    // Provinces
+    if (s.province && s.province.trim()) {
+      allProvinces.push(s.province);
+    }
+    
+    // Species types
+    if (s.species_type && s.species_type.trim()) {
+      allSpeciesTypes.push(...splitAndTrim(s.species_type));
+    }
+    
+    // Activity types (Quebec)
+    if (s.activity_type && s.activity_type.trim()) {
+      allActivityTypes.push(...splitAndTrim(s.activity_type));
+    }
+  });
+
+  return {
+    species: [...new Set(allSpecies)].sort(),
+    companies: [...new Set(allCompanies)].sort(),
+    provinces: [...new Set(allProvinces)].sort(),
+    species_types: [...new Set(allSpeciesTypes)].sort(),
+    activity_types: [...new Set(allActivityTypes)].sort(),
+  };
 }
 

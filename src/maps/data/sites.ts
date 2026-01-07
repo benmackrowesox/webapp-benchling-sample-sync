@@ -1,12 +1,12 @@
-// Unified API route for all aquaculture sites (UK, Iceland, Norway)
+// Unified API route for all aquaculture sites (UK, Iceland, Norway, Canada)
 import { NextApiRequest, NextApiResponse } from "next/types";
 import Papa from 'papaparse';
 import fs from 'fs';
 import path from 'path';
-import { AquacultureSite, IcelandSite, NorwegianSite, MapData, IcelandMapData, NorwegianMapData } from '../types/site';
-import { processUKSiteData, getUKFilterOptions, processIcelandSiteData, getIcelandFilterOptions, processNorwaySiteData, getNorwayFilterOptions } from './processing';
+import { AquacultureSite, IcelandSite, NorwegianSite, MapData, IcelandMapData, NorwegianMapData, CanadianSite, CanadianMapData } from '../types/site';
+import { processUKSiteData, getUKFilterOptions, processIcelandSiteData, getIcelandFilterOptions, processNorwaySiteData, getNorwayFilterOptions, processCanadianSiteData, getCanadianFilterOptions, webMercatorToWgs84, parseNovaScotiaLatitude, parseNovaScotiaLongitude } from './processing';
 
-type MapDataResponse = MapData | IcelandMapData | NorwegianMapData | { error: string };
+type MapDataResponse = MapData | IcelandMapData | NorwegianMapData | CanadianMapData | { error: string };
 
 export default function handler(req: NextApiRequest, res: NextApiResponse<MapDataResponse>) {
   const { region = 'uk' } = req.query;
@@ -26,6 +26,24 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<MapDat
         break;
       case 'norway':
         csvPath = path.join(process.cwd(), 'Norweigan_aquaculture_site_locations_030126.csv');
+        break;
+      case 'canada':
+      case 'britishcolumbia':
+      case 'newbrunswick':
+      case 'newfoundland':
+      case 'novascotia':
+      case 'quebec':
+        csvPath = path.join(process.cwd(), 'canadian_aquaculture_sites_070126', `${regionName}_aquaculture_sites_070126.csv`);
+        if (!fs.existsSync(csvPath)) {
+          // Try alternate filename for newfoundland
+          if (regionName === 'newfoundland') {
+            csvPath = path.join(process.cwd(), 'canadian_aquaculture_sites_070126', 'newfoundland_aquaculture_site_070126.csv');
+          } else if (regionName === 'novascotia') {
+            csvPath = path.join(process.cwd(), 'canadian_aquaculture_sites_070126', 'nova_scotia_aqauaculture_sites_070126.csv');
+          } else if (regionName === 'quebec') {
+            csvPath = path.join(process.cwd(), 'canadian_aquaculture_sites_070126', 'quebec_marine_aquaculture_sites_2017_070126.csv');
+          }
+        }
         break;
       case 'uk':
       default:
@@ -51,6 +69,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<MapDat
             break;
           case 'norway':
             handleNorwaySites(results.data, res);
+            break;
+          case 'canada':
+          case 'britishcolumbia':
+          case 'newbrunswick':
+          case 'newfoundland':
+          case 'novascotia':
+          case 'quebec':
+            handleCanadianSites(results.data, res, regionName);
             break;
           case 'uk':
           default:
@@ -108,5 +134,113 @@ function handleNorwaySites(data: any[], res: NextApiResponse<MapDataResponse>) {
   };
   
   res.status(200).json(mapData);
+}
+
+function handleCanadianSites(data: any[], res: NextApiResponse<MapDataResponse>, regionName: string) {
+  // Transform raw CSV data to CanadianSite format
+  const sites: CanadianSite[] = data.map((row: any) => {
+    const site: CanadianSite = {
+      site_id: row.site_ID || row.site_id || '',
+      company: row.company_person || row.company || '',
+      species: row.species || '',
+      species_type: row.species_type || '',
+      location: row.location || row.site_name || '',
+      province: row.region || row.province || getProvinceName(regionName),
+      latitude: undefined,
+      longitude: undefined,
+    };
+    
+    // Parse coordinates based on province format
+    if (regionName === 'britishcolumbia' || regionName === 'canada') {
+      // British Columbia - already in decimal degrees
+      if (row.latitude && row.longitude) {
+        site.latitude = parseFloat(row.latitude);
+        site.longitude = parseFloat(row.longitude);
+      }
+      site.license_type = row.license_type;
+      site.operating_group = row.Operating_group;
+    } else if (regionName === 'newbrunswick') {
+      // New Brunswick - no coordinates in source, UTM would need conversion
+      site.authorization_type = row.AUTHORIZATION_TYPE;
+      site.expiry_date = row['Expiry Date of Lease/Permit/Licence'];
+      site.cultivation_method = row['Cultivation Method'];
+      site.site_size_ha = parseFloat(row['Site Size (HA)']);
+    } else if (regionName === 'newfoundland') {
+      // Newfoundland - Web Mercator coordinates
+      if (row.latitude && row.longitude) {
+        const mercatorLat = parseFloat(row.latitude);
+        const mercatorLon = parseFloat(row.longitude);
+        if (!isNaN(mercatorLat) && !isNaN(mercatorLon)) {
+          const coords = webMercatorToWgs84(mercatorLon, mercatorLat);
+          site.latitude = coords.lat;
+          site.longitude = coords.lon;
+        }
+      }
+      site.tenure = row.TENURE;
+      site.licence_type = row.LICENCE_TYPE;
+      site.operation_type = row.OPERATION_TYPE;
+      site.status = row.STATUS;
+      site.contact = row.CONTACT;
+      site.address = (row.ADDRESS1 || '') + (row.ADDRESS2 ? ', ' + row.ADDRESS2 : '');
+      site.community = row.COMMUNITY;
+      site.postal_code = row.POSTAL;
+    } else if (regionName === 'novascotia') {
+      // Nova Scotia - DMS format
+      if (row.latitude && typeof row.latitude === 'string') {
+        site.latitude = parseNovaScotiaLatitude(row.latitude);
+      }
+      if (row.longitude && typeof row.longitude === 'string') {
+        site.longitude = parseNovaScotiaLongitude(row.longitude);
+      }
+      site.county = row.County;
+      site.site_status = row.SiteStatus;
+      site.nav_chart = row.NavChart;
+      site.hectares = parseFloat(row.Hectares);
+    } else if (regionName === 'quebec') {
+      // Quebec - already has centroid coordinates
+      if (row['Centroid Latitude'] && row['Centroid Longitude']) {
+        site.latitude = parseFloat(row['Centroid Latitude']);
+        site.longitude = parseFloat(row['Centroid Longitude']);
+      }
+      site.permit_number = row['Permit Number'];
+      site.research_site = row['Research Site'];
+      site.operating_sector = row['Operating Sector'];
+      site.permit_issued = row['Permit Issued On'];
+      site.permit_expired = row['Permit Expired On'];
+      site.activity_type = row['Activity Type'];
+      site.area_ha = parseFloat(row['Area (HA)']);
+      site.hectares_used = parseFloat(row['Hectares Used']);
+      site.occupancy_percent = parseFloat(row['Occupancy (%)']);
+      site.footprint_wkt = row['Footprint WKT'];
+    }
+    
+    return site;
+  });
+  
+  const processedSites = processCanadianSiteData(sites);
+  const filters = getCanadianFilterOptions(processedSites);
+  
+  const mapData: CanadianMapData = {
+    sites: processedSites,
+    filters,
+    totalCount: processedSites.length,
+  };
+  
+  res.status(200).json(mapData);
+}
+
+/**
+ * Get the display name for a Canadian province
+ */
+function getProvinceName(regionName: string): string {
+  const provinceNames: Record<string, string> = {
+    'britishcolumbia': 'British Columbia',
+    'newbrunswick': 'New Brunswick',
+    'newfoundland': 'Newfoundland',
+    'novascotia': 'Nova Scotia',
+    'quebec': 'Quebec',
+    'canada': 'Canada',
+  };
+  return provinceNames[regionName] || regionName;
 }
 

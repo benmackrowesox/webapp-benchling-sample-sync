@@ -112,9 +112,84 @@ export interface NorwegianMapData {
 }
 
 export interface MapRegion {
-  name: 'uk' | 'iceland' | 'norway';
+  name: 'uk' | 'iceland' | 'norway' | 'canada';
   displayName: string;
   dataFile: string;
-  type: AquacultureSite | IcelandSite | NorwegianSite;
+  type: AquacultureSite | IcelandSite | NorwegianSite | CanadianSite;
+}
+
+// ============ Canadian Site Types ============
+
+/**
+ * Unified interface for Canadian aquaculture site data
+ * Supports: British Columbia, New Brunswick, Newfoundland, Nova Scotia, Quebec
+ */
+export interface CanadianSite {
+  // Common fields
+  site_id: string;
+  company: string;
+  species: string;
+  species_type: string;
+  location: string;
+  province: string;
+  
+  // Coordinates (standardized to WGS84)
+  latitude?: number;
+  longitude?: number;
+  
+  // British Columbia specific
+  license_type?: string;
+  operating_group?: string;
+  
+  // New Brunswick specific
+  authorization_type?: string;
+  expiry_date?: string;
+  cultivation_method?: string;
+  site_size_ha?: number;
+  
+  // Newfoundland specific
+  tenure?: string;
+  licence_type?: string;
+  operation_type?: string;
+  status?: string;
+  contact?: string;
+  address?: string;
+  community?: string;
+  postal_code?: string;
+  
+  // Nova Scotia specific
+  county?: string;
+  site_status?: string;
+  nav_chart?: string;
+  hectares?: number;
+  
+  // Quebec specific
+  permit_number?: string;
+  research_site?: string;
+  operating_sector?: string;
+  permit_issued?: string;
+  permit_expired?: string;
+  activity_type?: string;
+  area_ha?: number;
+  hectares_used?: number;
+  occupancy_percent?: number;
+  footprint_wkt?: string;
+  
+  // Generated fields
+  hover_text?: string;
+}
+
+export interface CanadianFilterOptions {
+  species: string[];
+  companies: string[];
+  provinces: string[];
+  species_types: string[];
+  activity_types?: string[];
+}
+
+export interface CanadianMapData {
+  sites: CanadianSite[];
+  filters: CanadianFilterOptions;
+  totalCount: number;
 }
 
