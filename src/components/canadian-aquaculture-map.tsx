@@ -65,7 +65,22 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
           throw new Error('Failed to fetch data');
         }
         const data = await response.json();
-        setMapData(data);
+        
+        // Ensure data structure is valid
+        if (data && data.sites && Array.isArray(data.sites)) {
+          setMapData({
+            sites: data.sites,
+            filters: data.filters || {
+              companies: [],
+              species: [],
+              provinces: [],
+              species_types: []
+            },
+            totalCount: data.totalCount || data.sites.length
+          });
+        } else {
+          throw new Error('Invalid data structure received');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
@@ -78,9 +93,9 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
 
   // Create company color index
   const companyColorIndex = useMemo(() => {
-    if (!mapData) return new Map<string, number>();
+    if (!mapData || !mapData.filters) return new Map<string, number>();
     const indexMap = new Map<string, number>();
-    mapData.filters.companies.forEach((company, index) => {
+    (mapData.filters.companies || []).forEach((company, index) => {
       indexMap.set(company, index);
     });
     return indexMap;
@@ -256,7 +271,7 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
             onChange={(e) => setSelectedProvince(e.target.value)}
           >
             <MenuItem value="All">All Provinces</MenuItem>
-            {mapData.filters.provinces.map(province => (
+            {(mapData?.filters?.provinces || []).map(province => (
               <MenuItem key={province} value={province}>{province}</MenuItem>
             ))}
           </Select>
@@ -270,7 +285,7 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
             onChange={(e) => setSelectedCompany(e.target.value)}
           >
             <MenuItem value="All">All Companies</MenuItem>
-            {mapData.filters.companies.map(company => (
+            {(mapData?.filters?.companies || []).map(company => (
               <MenuItem key={company} value={company}>{company}</MenuItem>
             ))}
           </Select>
@@ -284,7 +299,7 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
             onChange={(e) => setSelectedSpecies(e.target.value)}
           >
             <MenuItem value="All">All Species</MenuItem>
-            {mapData.filters.species.map(species => (
+            {(mapData?.filters?.species || []).map(species => (
               <MenuItem key={species} value={species}>{species}</MenuItem>
             ))}
           </Select>
@@ -298,7 +313,7 @@ export default function CanadianAquacultureMap({ height = 600, region = 'canada'
             onChange={(e) => setSelectedType(e.target.value)}
           >
             <MenuItem value="All">All Types</MenuItem>
-            {mapData.filters.species_types.map(type => (
+            {(mapData?.filters?.species_types || []).map(type => (
               <MenuItem key={type} value={type}>{type}</MenuItem>
             ))}
           </Select>
