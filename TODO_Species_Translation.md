@@ -7,10 +7,14 @@
 - [x] Modify `parseNorwegianCSV()` to apply translation to the species field
 - [x] Update `processing.ts` to import translation utility
 - [x] Added 100+ Norwegian species translations
+- [x] Fix Canadian species duplicate handling in `processing.ts`
+  - [x] Updated `cleanSpeciesName()` to handle "X: " prefix format from New Brunswick data
+  - [x] Added Canadian-specific species to normalization dictionary (Giant Scallop, Iceland Scallop, Common Softshell Clam, Green Sea Urchin, Macroalgae, Brown Algae)
+  - [x] Fixed "Placopecten magellanicus" mapping from "Sea Scallop" to "Giant Scallop"
 
 ## Files Modified
 1. `src/utils/norwayAdapter.ts` - Added species translation dictionary and functions
-2. `src/maps/data/processing.ts` - Added import for translation utility
+2. `src/maps/data/processing.ts` - Added import for translation utility, fixed species normalization for Canadian data
 
 ## Translation Coverage
 The translation includes:

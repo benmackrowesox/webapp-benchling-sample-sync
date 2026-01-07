@@ -67,8 +67,11 @@ const SPECIES_NORMALIZATIONS: Record<string, string> = {
   'blue mussel': 'Blue Mussel',
   'mytilus edulis': 'Blue Mussel',
   'mytilus galloprovincialis': 'Mediterranean Mussel',
+  'giant scallop': 'Giant Scallop',
+  'placopecten magellanicus': 'Giant Scallop',
   'sea scallop': 'Sea Scallop',
-  'placopecten magellanicus': 'Sea Scallop',
+  'iceland scallop': 'Iceland Scallop',
+  'chlamys islandica': 'Iceland Scallop',
   'bay scallop': 'Bay Scallop',
   'argopecten irradians': 'Bay Scallop',
   'lobster': 'American Lobster',
@@ -96,6 +99,7 @@ const SPECIES_NORMALIZATIONS: Record<string, string> = {
   'oyster': 'Oyster',
   'clams': 'Clam',
   'softshell clam': 'Softshell Clam',
+  'common softshell clam': 'Common Softshell Clam',
   'mya arenaria': 'Softshell Clam',
   'razor clam': 'Razor Clam',
   'geoduck': 'Geoduck',
@@ -110,15 +114,22 @@ const SPECIES_NORMALIZATIONS: Record<string, string> = {
   'ascophyllum nodosum': 'Rockweed',
   'fucus vesiculosus': 'Bladder Wrack',
   'wrack': 'Wrack',
+  // Additional Canadian species
+  'green sea urchin': 'Green Sea Urchin',
+  'strongylocentrotus droebachiensis': 'Green Sea Urchin',
+  'sea urchin': 'Sea Urchin',
+  'macroalgae': 'Macroalgae',
+  'brown algae': 'Brown Algae',
 };
 
 /**
  * Clean up species name by removing numeric prefixes and normalizing variations
  * e.g., "1 American Oyster" -> "American Oyster", "atlantic salmon" -> "Atlantic Salmon"
+ * e.g., "4: Atlantic Salmon" -> "Atlantic Salmon" (New Brunswick format)
  */
 export function cleanSpeciesName(speciesName: string): string {
-  // Remove leading numbers and whitespace (e.g., "1 ", "2 ", "10 ")
-  let cleaned = speciesName.replace(/^\d+\s*/, '').trim();
+  // Remove leading numbers with optional colon and space (e.g., "1 ", "10 ", "4: ", "34:")
+  let cleaned = speciesName.replace(/^\d+:\s*/, '').replace(/^\d+\s*/, '').trim();
   
   // Convert to lowercase for case-insensitive matching
   const lower = cleaned.toLowerCase();
