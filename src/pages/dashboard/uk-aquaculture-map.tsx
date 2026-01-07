@@ -8,8 +8,9 @@ import { useEffect, useState } from "react";
 import AquacultureMapLeaflet from "../../components/aquaculture-map-leaflet";
 import IcelandMap from "../../components/iceland-map";
 import NorwegianAquacultureMap from "../../components/norwegian-aquaculture-map";
+import CanadianAquacultureMap from "../../components/canadian-aquaculture-map";
 
-type MapRegion = 'uk' | 'iceland' | 'norway';
+type MapRegion = 'uk' | 'iceland' | 'norway' | 'canada';
 
 const UKAquacultureMap: NextPage = () => {
   useEffect(() => {
@@ -53,6 +54,7 @@ const UKAquacultureMap: NextPage = () => {
               <ToggleButton value="uk">UK</ToggleButton>
               <ToggleButton value="iceland">Iceland</ToggleButton>
               <ToggleButton value="norway">Norway</ToggleButton>
+              <ToggleButton value="canada">Canada</ToggleButton>
             </ToggleButtonGroup>
           </Box>
           <Typography variant="body1" color="text.secondary" paragraph>
@@ -60,15 +62,19 @@ const UKAquacultureMap: NextPage = () => {
               ? 'Interactive map showing UK aquaculture facilities, fish farms, and related infrastructure across the United Kingdom.'
               : selectedRegion === 'iceland'
                 ? 'Interactive map showing Iceland aquaculture facilities, fish farms, and related infrastructure across Iceland.'
-                : 'Interactive map showing Norwegian aquaculture sites from the supplied Norwegian dataset.'}
+                : selectedRegion === 'norway'
+                  ? 'Interactive map showing Norwegian aquaculture sites from the supplied Norwegian dataset.'
+                  : 'Interactive map showing Canadian aquaculture sites across British Columbia, New Brunswick, Newfoundland, Nova Scotia, and Quebec.'}
           </Typography>
           <Box sx={{ mt: 3 }}>
             {selectedRegion === 'uk' ? (
               <AquacultureMapLeaflet height={700} />
             ) : selectedRegion === 'iceland' ? (
               <IcelandMap height={700} />
-            ) : (
+            ) : selectedRegion === 'norway' ? (
               <NorwegianAquacultureMap height={700} />
+            ) : (
+              <CanadianAquacultureMap height={700} />
             )}
           </Box>
         </Container>
