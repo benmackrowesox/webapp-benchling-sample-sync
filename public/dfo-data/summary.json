@@ -1,0 +1,66 @@
+{
+  "url": "https://www.dfo-mpo.gc.ca/aquaculture/bc-cb/maps-cartes-eng.html",
+  "scrapedAt": "2026-01-07T10:44:04.687Z",
+  "totalTables": 4,
+  "tables": [
+    {
+      "index": 1,
+      "section": "Map of Marine finfish aquaculture facilities in British Columbia",
+      "caption": "Marine finfish aquaculture facilities in British Columbia",
+      "headers": [
+        "Facility reference number",
+        "Licence type",
+        "Licence holder",
+        "Facility common name",
+        "Licensed species",
+        "Latitude",
+        "Longitude",
+        "Aquaculture management unit"
+      ],
+      "totalRows": 65
+    },
+    {
+      "index": 2,
+      "section": "Map of shellfish aquaculture in British Columbia",
+      "caption": "Shellfish aquaculture facilities in British Columbia",
+      "headers": [
+        "Facility reference number",
+        "Licence type",
+        "Licence holder",
+        "Facility common names",
+        "Latitude",
+        "Longitude"
+      ],
+      "totalRows": 462
+    },
+    {
+      "index": 3,
+      "section": "Map of landbased aquaculture in British Columbia",
+      "caption": "Landbased aquaculture facilities in British Columbia",
+      "headers": [
+        "Facility reference number",
+        "Licence type",
+        "Licence holder",
+        "Facility common name",
+        "Latitude",
+        "Longitude"
+      ],
+      "totalRows": 71
+    },
+    {
+      "index": 4,
+      "section": "Map of enhancement aquaculture in British Columbia",
+      "caption": "Aquaculture enhancement facilities in British Columbia",
+      "headers": [
+        "Facility reference number",
+        "Licence type",
+        "Licence holder",
+        "Operating group",
+        "Facility common name",
+        "Latitude",
+        "Longitude"
+      ],
+      "totalRows": 125
+    }
+  ]
+}
