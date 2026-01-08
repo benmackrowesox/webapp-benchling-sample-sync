@@ -5,7 +5,7 @@ import path from 'path';
 import { AquacultureSite, MapData } from '../../types/site';
 import { CanadianSite, CanadianMapData } from '../../maps/types/site';
 import { processSiteData, getFilterOptions, buildHoverText } from '../../utils/dataProcessing';
-import { processCanadianSiteData, getCanadianFilterOptions, buildCanadianHoverText } from '../../maps/data/processing';
+import { processCanadianSiteData, getCanadianFilterOptions, buildCanadianHoverText, cleanSpeciesName } from '../../maps/data/processing';
 import { webMercatorToWgs84, parseNovaScotiaLatitude, parseNovaScotiaLongitude } from '../../maps/data/processing';
 
 type MapDataResponse = MapData | CanadianMapData | { error: string };
@@ -168,7 +168,7 @@ function handleCanadianSites(data: any[], res: NextApiResponse<MapDataResponse>,
     const site: CanadianSite = {
       site_id: row.site_ID || row.site_id || '',
       company: row.company_person || row.company || '',
-      species: row.species || '',
+      species: cleanSpeciesName(row.species) || '',
       species_type: row.species_type || '',
       location: row.location || row.site_name || '',
       province: row.region || row.province || getProvinceName(rowProvince),
@@ -233,7 +233,9 @@ function handleCanadianSites(data: any[], res: NextApiResponse<MapDataResponse>,
       site.operating_sector = row['Operating Sector'];
       site.permit_issued = row['Permit Issued On'];
       site.permit_expired = row['Permit Expired On'];
-      site.activity_type = row['Activity Type'];
+      // Change "Enhancement" to "Research" for activity type
+      const rawActivityType = row['Activity Type'];
+      site.activity_type = rawActivityType?.toLowerCase().includes('enhancement') ? 'Research' : rawActivityType;
       site.area_ha = parseFloat(row['Area (HA)']);
       site.hectares_used = parseFloat(row['Hectares Used']);
       site.occupancy_percent = parseFloat(row['Occupancy (%)']);
