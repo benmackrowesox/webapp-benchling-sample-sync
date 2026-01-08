@@ -126,10 +126,14 @@ const SPECIES_NORMALIZATIONS: Record<string, string> = {
  * Clean up species name by removing numeric prefixes and normalizing variations
  * e.g., "1 American Oyster" -> "American Oyster", "atlantic salmon" -> "Atlantic Salmon"
  * e.g., "4: Atlantic Salmon" -> "Atlantic Salmon" (New Brunswick format)
+ * e.g., "Sablefish (Anoplopoma fimbria)" -> "Sablefish" (removes Latin names in parentheses)
  */
 export function cleanSpeciesName(speciesName: string): string {
   // Remove leading numbers with optional colon and space (e.g., "1 ", "10 ", "4: ", "34:")
   let cleaned = speciesName.replace(/^\d+:\s*/, '').replace(/^\d+\s*/, '').trim();
+  
+  // Remove Latin names in parentheses (e.g., "Sablefish (Anoplopoma fimbria)" -> "Sablefish")
+  cleaned = cleaned.replace(/\s*\([^)]*\)\s*/g, '').trim();
   
   // Convert to lowercase for case-insensitive matching
   const lower = cleaned.toLowerCase();
@@ -601,6 +605,36 @@ export function processCanadianSiteData(sites: CanadianSite[]): CanadianSite[] {
 }
 
 /**
+ * Map species_type to site_type for filtering
+ * Groups sites by their location type: Marine, Freshwater, Landbased, Research
+ */
+function getSiteType(speciesType: string): string {
+  const type = speciesType.toLowerCase();
+  
+  // Marine sites
+  if (type.includes('marine')) {
+    return 'Marine';
+  }
+  
+  // Freshwater sites
+  if (type.includes('freshwater') || type.includes('river') || type.includes('lake')) {
+    return 'Freshwater';
+  }
+  
+  // Landbased sites
+  if (type.includes('landbased') || type.includes('hatchery')) {
+    return 'Landbased';
+  }
+  
+  // Research/Enhancement sites
+  if (type.includes('enhancement') || type.includes('research') || type.includes('recreational') || type.includes('stocking')) {
+    return 'Research';
+  }
+  
+  return 'Marine'; // Default to Marine for unknown types
+}
+
+/**
  * Get unique values for Canadian site filtering
  */
 export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterOptions {
@@ -608,6 +642,7 @@ export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterO
   const allCompanies: string[] = [];
   const allProvinces: string[] = [];
   const allSpeciesTypes: string[] = [];
+  const allSiteTypes: string[] = [];
   const allActivityTypes: string[] = [];
 
   sites.forEach(s => {
@@ -630,11 +665,20 @@ export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterO
     // Species types
     if (s.species_type && s.species_type.trim()) {
       allSpeciesTypes.push(...splitAndTrim(s.species_type));
+      // Also derive site_type from species_type
+      const siteTypes = splitAndTrim(s.species_type).map(getSiteType);
+      allSiteTypes.push(...siteTypes);
     }
     
-    // Activity types (Quebec)
+    // Activity types (Quebec) - change Enhancement to Research
     if (s.activity_type && s.activity_type.trim()) {
-      allActivityTypes.push(...splitAndTrim(s.activity_type));
+      const activities = splitAndTrim(s.activity_type).map(a => {
+        if (a.toLowerCase().includes('enhancement')) {
+          return 'Research';
+        }
+        return a;
+      });
+      allActivityTypes.push(...activities);
     }
   });
 
@@ -643,6 +687,7 @@ export function getCanadianFilterOptions(sites: CanadianSite[]): CanadianFilterO
     companies: [...new Set(allCompanies)].sort(),
     provinces: [...new Set(allProvinces)].sort(),
     species_types: [...new Set(allSpeciesTypes)].sort(),
+    site_types: [...new Set(allSiteTypes)].sort(),
     activity_types: [...new Set(allActivityTypes)].sort(),
   };
 }

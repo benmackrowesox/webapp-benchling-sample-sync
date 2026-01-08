@@ -184,6 +184,7 @@ export interface CanadianFilterOptions {
   companies: string[];
   provinces: string[];
   species_types: string[];
+  site_types: string[];
   activity_types?: string[];
 }
 
