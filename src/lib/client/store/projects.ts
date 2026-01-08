@@ -29,8 +29,7 @@ import type {
   AddSampleRequest,
   ProjectSummary,
   ProjectWithStats,
-  SampleStatus,
-  MetadataSubmission
+  SampleStatus
 } from "src/types/project";
 import type { InternalUser } from "src/types/user";
 
