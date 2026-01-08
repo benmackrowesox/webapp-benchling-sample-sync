@@ -100,6 +100,8 @@ export interface UpdateProjectRequest {
   sampleTypes?: string[];
   deliveryAddress?: OrganisationAddress;
   metadataFields?: ProjectMetadataField[];
+  linkedOrderIds?: string[];
+  isActive?: boolean;
 }
 
 export interface LinkOrderRequest {
