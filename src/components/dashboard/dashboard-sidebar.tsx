@@ -156,11 +156,10 @@ const getSections = (): Section[] => [
     items: [
       {
         title: "Help",
-        path: "/help",
+        path: "/dashboard/help",
         icon: (
           <QuestionMarkIcon fontSize="small" sx={{ translate: "2px 2px" }} />
         ),
-        newTab: true,
       },
       {
         title: "Sample Returns",
