@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import PropTypes from "prop-types";
 import { useTypedAuth } from "../../hooks/use-auth";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -13,11 +14,16 @@ export const AdminGuard: FC<AuthGuardProps> = (props) => {
   const { children, guardFailedChildren } = props;
   const { user } = useTypedAuth();
 
+  console.log("[AdminGuard] Checking user:", user?.id);
+
   // here check the user permissions
   if (!user) {
+    console.log("[AdminGuard] No user, returning null");
     return null;
   }
   const canView: boolean = user.isAdmin || false;
+
+  console.log("[AdminGuard] canView:", canView);
 
   if (!canView) {
     return guardFailedChildren ? <>{guardFailedChildren}</> : null;
@@ -29,6 +35,8 @@ export const AdminGuard: FC<AuthGuardProps> = (props) => {
 export const ApprovedUserGuard: FC<AuthGuardProps> = (props) => {
   const { children, guardFailedChildren } = props;
   const { user } = useTypedAuth();
+
+  console.log("[ApprovedUserGuard] Checking user:", user?.id);
 
   const canView: boolean = (user?.isApproved && user.emailVerified) || false;
 
@@ -45,22 +53,36 @@ export const AuthGuard: FC<AuthGuardProps> = (props) => {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
 
+  console.log("[AuthGuard] Checking auth:", {
+    isAuthenticated: auth.isAuthenticated,
+    isInitialized: auth.isInitialized,
+    user: auth.user?.id,
+    isReady: router.isReady,
+    checked
+  });
+
   useEffect(
     () => {
       if (!router.isReady) {
         return;
       }
 
+      console.log("[AuthGuard] Auth state:", auth.isAuthenticated);
+
       if (!auth.isAuthenticated) {
+        console.log("[AuthGuard] Not authenticated, setting redirect timeout");
         setTimeout(() => {
           // hack to prevent premature redirect to login page: redirect can occur before auth context updated, so check again after a delay.
           if (!auth.isAuthenticated) {
+            console.log("[AuthGuard] Still not authenticated after delay, redirecting to login");
             router
               .push({
                 pathname: "/authentication/login",
                 query: { returnUrl: router.asPath },
               })
               .catch(console.error);
+          } else {
+            setChecked(true);
           }
         }, 1000);
       } else {
@@ -68,11 +90,29 @@ export const AuthGuard: FC<AuthGuardProps> = (props) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [router.isReady]
+    [router.isReady, auth.isAuthenticated]
   );
 
   if (!checked) {
-    return null;
+    console.log("[AuthGuard] Not checked yet, showing loading");
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          gap: 2,
+        }}
+      >
+        <CircularProgress />
+        <Typography>Checking authentication...</Typography>
+        <Typography variant="caption" color="textSecondary">
+          isAuthenticated: {auth.isAuthenticated ? "true" : "false"}
+        </Typography>
+      </Box>
+    );
   }
 
   // if got here, it means that the redirect did not occur, and that tells us that the user is
@@ -89,10 +129,14 @@ export const AdminOrApprovedGuard: FC<AuthGuardProps> = (props) => {
   const { children, guardFailedChildren } = props;
   const { user } = useTypedAuth();
 
+  console.log("[AdminOrApprovedGuard] Checking user:", user?.id);
+
   const isApproved = (user?.isApproved && user?.emailVerified) || false;
   const isAdmin = user?.isAdmin || false;
 
   const canView: boolean = isAdmin || isApproved;
+
+  console.log("[AdminOrApprovedGuard] canView:", canView, { isApproved, isAdmin });
 
   if (!canView) {
     return guardFailedChildren ? <>{guardFailedChildren}</> : null;

@@ -50,10 +50,16 @@ interface OrderSummary {
 }
 
 const ProjectDetailsPage: NextPage = () => {
+  console.log("[ProjectDetailsPage] Component rendering");
+  console.log("[ProjectDetailsPage] router.query:", router.query);
+  
   const isMounted = useMounted();
   const router = useRouter();
   const { user, sendRequest } = useTypedAuth();
   const projectId = router.query.projectId as string;
+  
+  console.log("[ProjectDetailsPage] projectId:", projectId);
+  console.log("[ProjectDetailsPage] user:", user?.id, user?.email);
   
   const [project, setProject] = useState<ProjectWithStats | null>(null);
   const [samples, setSamples] = useState<ProjectSample[]>([]);
