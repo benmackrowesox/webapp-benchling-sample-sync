@@ -18,7 +18,7 @@ async function decodeToken(req: NextApiRequest) {
   return decodedToken;
 }
 
-async function isUserAdmin(uid: string): Promise<boolean> {
+async function checkIsUserAdmin(uid: string): Promise<boolean> {
   const userDoc = await firebaseServerAdmin
     .firestore()
     .doc(`/new_users/${uid}`)
@@ -48,7 +48,7 @@ export default async function handler(
   // GET - Get project details
   if (req.method === "GET") {
     try {
-      const isUserAdminFlag = await isUserAdmin(token.uid);
+      const isUserAdminFlag = await checkIsUserAdmin(token.uid);
       
       // Fetch project
       const projectDoc = await firebaseServerAdmin
@@ -106,7 +106,7 @@ export default async function handler(
   // PATCH - Update project
   if (req.method === "PATCH") {
     try {
-      const isUserAdminFlag = await isUserAdmin(token.uid);
+      const isUserAdminFlag = await checkIsUserAdmin(token.uid);
       
       // Fetch project first
       const projectDoc = await firebaseServerAdmin
@@ -153,7 +153,7 @@ export default async function handler(
   // DELETE - Archive project (admin only)
   if (req.method === "DELETE") {
     try {
-      const isUserAdminFlag = await isUserAdmin(token.uid);
+      const isUserAdminFlag = await checkIsUserAdmin(token.uid);
       
       if (!isUserAdminFlag) {
         res.status(403).send("Not authorized. Admin access required.");
