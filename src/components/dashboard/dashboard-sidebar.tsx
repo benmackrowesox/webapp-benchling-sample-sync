@@ -23,6 +23,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import SetMealIcon from "@mui/icons-material/SetMeal";
 import { TestTubes as TestTubesIcon } from "src/icons/test-tubes";
 import { Home as HomeIcon } from "src/icons/home";
+import BusinessIcon from "@mui/icons-material/Business";
 
 interface DashboardSidebarProps {
   onClose?: () => void;
@@ -47,6 +48,16 @@ const getAdminSections = (): Section[] => [
   {
     title: "Admin",
     items: [
+      {
+        title: "Organisations",
+        path: "/dashboard/organisations",
+        icon: <BusinessIcon fontSize="small" />,
+      },
+      {
+        title: "Projects",
+        path: "/dashboard/projects",
+        icon: <TestTubesIcon fontSize="small" />,
+      },
       {
         title: "Edit blogs",
         path: "/dashboard/edit-blogs",
@@ -97,33 +108,18 @@ const getUnapprovedUserSections = (): Section[] => [
 ];
 const getApprovedUserSections = (): Section[] => [
   {
-    title: "Orders",
+    title: "Projects",
     items: [
       {
-        title: "New Order",
-        icon: <Add fontSize="small" />,
-        path: "/dashboard/orders/request",
-      },
-      {
-        title: "Orders",
+        title: "Projects",
         icon: <TestTubesIcon fontSize="small" />,
-        path: "/dashboard/orders",
+        path: "/dashboard/projects",
       },
       {
         title: "Embedded App",
         icon: <HomeIcon fontSize="small" />,
         path: "/dashboard/embedded-app",
       },
-      // {
-      //   title: "Completed Reports",
-      //   icon: <ReportsIcon fontSize="small" />,
-      //   path: "/dashboard/reports",
-      // },
-      // {
-      //   title: "Comparisons",
-      //   icon: <ArrowsCompareIcon fontSize="small" />,
-      //   path: "/dashboard/comparisons",
-      // },
     ],
   },
 ];

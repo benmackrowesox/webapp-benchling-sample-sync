@@ -5,6 +5,7 @@ export interface InternalUser {
   isAdmin: boolean;
   isApproved: boolean;
   emailVerified: boolean;
+  organisationId?: string;
   [key: string]: any;
 }
 
@@ -23,6 +24,10 @@ export type firestoreUser = {
   isAdmin?: boolean;
   awaitingApproval: boolean;
   dateRegistered: number;
+  // Organisation link for the new project-based system
+  organisationId?: string;
+  // Legacy field - kept for backward compatibility during migration
+  companyName?: string;
 };
 
 export type Address = {

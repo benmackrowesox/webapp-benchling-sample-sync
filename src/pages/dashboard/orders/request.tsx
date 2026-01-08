@@ -14,8 +14,12 @@ import {
   Stack,
   TextField,
   Typography,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
+import NextLink from "next/link";
+
 
 import { useTypedAuth } from "src/hooks/use-auth";
 
@@ -338,6 +342,15 @@ const Page: NextPage = () => {
         }}
       >
         <Container maxWidth="lg">
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <AlertTitle>Legacy Order System</AlertTitle>
+            This is the legacy order request form. For new projects, please use the{" "}
+            <NextLink href="/dashboard/projects/new" style={{ color: '#1976d2', fontWeight: 500 }}>
+              Create Project
+            </NextLink>{" "}
+            system instead. Projects provide better organization and collaboration features.
+          </Alert>
+          
           <Stack spacing={4}>
             <Typography variant="h4">Proposal / Order Request</Typography>
             <PageHelpSection>{getHelpText(currentPage)}</PageHelpSection>

@@ -5,6 +5,7 @@ import firebaseAdmin from "firebase-admin";
 import { firebaseAdminConfig } from "src/private-config";
 import { firestoreUser } from "src/types/user";
 import { MetadataField } from "src/types/order";
+import { Organisation } from "src/types/organisation";
 
 const alreadyCreatedApps = getApps();
 
@@ -84,4 +85,161 @@ export const getAllMetadataFields = async (): Promise<MetadataField[]> => {
     }));
 
   return fields;
+};
+
+// Organisation helper functions
+export const getOrganisation = async (
+  organisationId: string,
+): Promise<Organisation | null> => {
+  const docRef = firebaseServerAdmin
+    .firestore()
+    .doc(`organisations/${organisationId}`);
+  
+  const docSnap = await docRef.get();
+  
+  if (!docSnap.exists) {
+    return null;
+  }
+  
+  return {
+    ...docSnap.data(),
+    id: docSnap.id,
+  } as Organisation;
+};
+
+export const createOrganisation = async (
+  name: string,
+  createdBy: string,
+  description?: string,
+): Promise<string> => {
+  const docRef = await firebaseServerAdmin
+    .firestore()
+    .collection("organisations")
+    .add({
+      name,
+      description,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      createdBy,
+      users: [],
+      isActive: true,
+    });
+  
+  return docRef.id;
+};
+
+export const addUserToOrganisation = async (
+  organisationId: string,
+  userId: string,
+  email: string,
+  role: "owner" | "admin" | "member" | "viewer" = "member",
+): Promise<void> => {
+  const org = await getOrganisation(organisationId);
+  if (!org) {
+    throw new Error("Organisation not found");
+  }
+  
+  const newUser = {
+    userId,
+    email,
+    name: email,
+    role,
+    joinedAt: Date.now(),
+  };
+  
+  const updatedUsers = [...org.users, newUser];
+  
+  await firebaseServerAdmin
+    .firestore()
+    .doc(`organisations/${organisationId}`)
+    .update({
+      users: updatedUsers,
+      updatedAt: Date.now(),
+    });
+};
+
+export const removeUserFromOrganisation = async (
+  organisationId: string,
+  userId: string,
+): Promise<void> => {
+  const org = await getOrganisation(organisationId);
+  if (!org) {
+    throw new Error("Organisation not found");
+  }
+  
+  const updatedUsers = org.users.filter((u) => u.userId !== userId);
+  
+  await firebaseServerAdmin
+    .firestore()
+    .doc(`organisations/${organisationId}`)
+    .update({
+      users: updatedUsers,
+      updatedAt: Date.now(),
+    });
+};
+
+export const getUserOrganisation = async (
+  userId: string,
+): Promise<Organisation | null> => {
+  const snapshot = await firebaseServerAdmin
+    .firestore()
+    .collection("organisations")
+    .where("users.userId", "==", userId)
+    .limit(1)
+    .get();
+  
+  if (snapshot.empty) {
+    return null;
+  }
+  
+  const doc = snapshot.docs[0];
+  return {
+    ...doc.data(),
+    id: doc.id,
+  } as Organisation;
+};
+
+export const getUserOrganisationId = async (
+  userId: string,
+): Promise<string | null> => {
+  const org = await getUserOrganisation(userId);
+  return org?.id ?? null;
+};
+
+export const isUserInOrganisation = async (
+  organisationId: string,
+  userId: string,
+): Promise<boolean> => {
+  const org = await getOrganisation(organisationId);
+  if (!org) {
+    return false;
+  }
+  
+  return org.users.some((u) => u.userId === userId);
+};
+
+export const getAllOrganisations = async (): Promise<Organisation[]> => {
+  const snapshot = await firebaseServerAdmin
+    .firestore()
+    .collection("organisations")
+    .orderBy("createdAt", "desc")
+    .get();
+  
+  return snapshot.docs.map((doc) => ({
+    ...doc.data(),
+    id: doc.id,
+  })) as Organisation[];
+};
+
+export const updateOrganisation = async (
+  organisationId: string,
+  updates: Partial<Organisation>,
+): Promise<void> => {
+  await firebaseServerAdmin
+    .firestore()
+    .doc(`organisations/${organisationId}`)
+    .update({
+      ...updates,
+      updatedAt: Date.now(),
+    });
 };

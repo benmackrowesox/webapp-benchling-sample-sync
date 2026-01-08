@@ -11,6 +11,9 @@ import {
   Tabs,
   TextField,
   Typography,
+  Alert,
+  AlertTitle,
+  Button,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { orderStore } from "../../../lib/client/store/orders";
@@ -23,6 +26,7 @@ import { gtm } from "../../../lib/client/gtm";
 import type { NewOrder, OrderStatus } from "../../../types/order";
 import { useRouter } from "next/router";
 import { useAuth } from "src/hooks/use-auth";
+import NextLink from "next/link";
 
 interface Filters {
   query?: string;
@@ -290,13 +294,21 @@ const OrderList: NextPage = () => {
                 <Typography variant="h4">Orders</Typography>
               </Grid>
             </Grid>
+            
+            <Alert severity="info" sx={{ mt: 3, mb: 2 }}>
+              <AlertTitle>Legacy System</AlertTitle>
+              This page shows historical orders from the legacy system. 
+              For new sample submissions, please use the <NextLink href="/dashboard/projects" style={{ color: '#1976d2', fontWeight: 500 }}>Projects</NextLink> system. 
+              Projects allow for better organization of samples and easier collaboration.
+            </Alert>
+            
             <Tabs
               indicatorColor="primary"
               onChange={handleTabsChange}
               scrollButtons="auto"
               textColor="primary"
               value={currentTab}
-              sx={{ mt: 3 }}
+              sx={{ mt: 1 }}
               variant="scrollable"
             >
               {tabs.map((tab) => (
