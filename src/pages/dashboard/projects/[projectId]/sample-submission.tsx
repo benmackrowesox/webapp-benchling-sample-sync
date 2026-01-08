@@ -28,7 +28,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import SaveIcon from "@mui/icons-material/Save";
-import { AuthGuard, ApprovedUserGuard } from "../../../../components/authentication/auth-guard";
+import { AuthGuard, AdminOrApprovedGuard } from "../../../../components/authentication/auth-guard";
 import { DashboardLayout } from "../../../../components/dashboard/dashboard-layout";
 import { useMounted } from "../../../../hooks/use-mounted";
 import { gtm } from "../../../../lib/client/gtm";
@@ -518,9 +518,9 @@ const SampleSubmissionPage: NextPage = () => {
 
 SampleSubmissionPage.getLayout = (page) => (
   <AuthGuard>
-    <ApprovedUserGuard>
+    <AdminOrApprovedGuard>
       <DashboardLayout>{page}</DashboardLayout>
-    </ApprovedUserGuard>
+    </AdminOrApprovedGuard>
   </AuthGuard>
 );
 
