@@ -59,6 +59,7 @@ const ProjectDetailsPage: NextPage = () => {
   const [samples, setSamples] = useState<ProjectSample[]>([]);
   const [legacyOrders, setLegacyOrders] = useState<OrderSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentTab, setCurrentTab] = useState("samples");
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -69,6 +70,7 @@ const ProjectDetailsPage: NextPage = () => {
 
     try {
       setLoading(true);
+      setError(null);
       
       // Fetch project
       const projectData = await sendRequest<undefined, ProjectWithStats>(
@@ -77,8 +79,8 @@ const ProjectDetailsPage: NextPage = () => {
       );
       
       if (!projectData) {
-        toast.error("Project not found");
-        router.push("/dashboard/projects");
+        setError("Project not found");
+        setLoading(false);
         return;
       }
       
@@ -114,7 +116,7 @@ const ProjectDetailsPage: NextPage = () => {
       }
     } catch (error) {
       console.error("Error fetching project data:", error);
-      toast.error("Failed to load project data");
+      setError("Failed to load project data");
     } finally {
       setLoading(false);
     }
@@ -193,8 +195,34 @@ const ProjectDetailsPage: NextPage = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h6" color="error" gutterBottom>
+          {error}
+        </Typography>
+        <NextLink href="/dashboard/projects" passHref legacyBehavior>
+          <Button startIcon={<ArrowBackIcon />}>
+            Back to Projects
+          </Button>
+        </NextLink>
+      </Box>
+    );
+  }
+
   if (!project) {
-    return null;
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography variant="h6" gutterBottom>
+          Project not found
+        </Typography>
+        <NextLink href="/dashboard/projects" passHref legacyBehavior>
+          <Button startIcon={<ArrowBackIcon />}>
+            Back to Projects
+          </Button>
+        </NextLink>
+      </Box>
+    );
   }
 
   return (
