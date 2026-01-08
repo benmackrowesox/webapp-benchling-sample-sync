@@ -26,10 +26,14 @@ class OrganisationStore {
   async getOrganisations(): Promise<Organisation[]> {
     await getDocs(collection(db, "organisations"))
       .then((querySnapshot) => {
-        const data: Organisation[] = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
+        const data: Organisation[] = querySnapshot.docs.map((doc) => {
+          const docData = doc.data();
+          return {
+            ...docData,
+            id: doc.id,
+            users: (docData.users || []) as OrganisationUser[],
+          } as Organisation;
+        });
         this.organisations = data;
       })
       .catch((err) => {
@@ -50,10 +54,14 @@ class OrganisationStore {
     
     await getDocs(q)
       .then((querySnapshot) => {
-        const data: Organisation[] = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
+        const data: Organisation[] = querySnapshot.docs.map((doc) => {
+          const docData = doc.data();
+          return {
+            ...docData,
+            id: doc.id,
+            users: (docData.users || []) as OrganisationUser[],
+          } as Organisation;
+        });
         this.organisations = data;
       })
       .catch((err) => {

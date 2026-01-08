@@ -23,14 +23,34 @@ import { db } from "src/lib/client/firebase";
 import type { 
   Project, 
   ProjectSample,
+  ProjectMetadataField,
   CreateProjectRequest, 
   UpdateProjectRequest,
   AddSampleRequest,
   ProjectSummary,
   ProjectWithStats,
-  SampleStatus 
+  SampleStatus,
+  MetadataSubmission
 } from "src/types/project";
 import type { InternalUser } from "src/types/user";
+
+// Helper interface for Firestore data
+interface FirestoreProjectData {
+  title: string;
+  description?: string;
+  organisationId: string;
+  status: string;
+  services: string[];
+  sampleTypes: string[];
+  linkedOrderIds: string[];
+  metadataFields: ProjectMetadataField[];
+  createdBy: string;
+  createdAt: number;
+  updatedAt?: number;
+  deliveryAddress?: any;
+  proposal?: string;
+}
+
 
 class ProjectStore {
   projects: Project[] = [];
@@ -42,10 +62,25 @@ class ProjectStore {
   async getProjects(): Promise<Project[]> {
     await getDocs(collection(db, "projects"))
       .then((querySnapshot) => {
-        const data: Project[] = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
+        const data: Project[] = querySnapshot.docs.map((doc) => {
+          const docData = doc.data() as FirestoreProjectData;
+          return {
+            id: doc.id,
+            title: docData.title,
+            description: docData.description,
+            organisationId: docData.organisationId,
+            status: docData.status as Project["status"],
+            services: docData.services,
+            sampleTypes: docData.sampleTypes,
+            linkedOrderIds: docData.linkedOrderIds || [],
+            metadataFields: docData.metadataFields || [],
+            createdBy: docData.createdBy,
+            createdAt: docData.createdAt,
+            updatedAt: docData.updatedAt,
+            deliveryAddress: docData.deliveryAddress,
+            proposal: docData.proposal,
+          } as Project;
+        });
         this.projects = data;
       })
       .catch((err) => {
@@ -67,10 +102,25 @@ class ProjectStore {
     
     await getDocs(q)
       .then((querySnapshot) => {
-        const data: Project[] = querySnapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        }));
+        const data: Project[] = querySnapshot.docs.map((doc) => {
+          const docData = doc.data() as FirestoreProjectData;
+          return {
+            id: doc.id,
+            title: docData.title,
+            description: docData.description,
+            organisationId: docData.organisationId,
+            status: docData.status as Project["status"],
+            services: docData.services,
+            sampleTypes: docData.sampleTypes,
+            linkedOrderIds: docData.linkedOrderIds || [],
+            metadataFields: docData.metadataFields || [],
+            createdBy: docData.createdBy,
+            createdAt: docData.createdAt,
+            updatedAt: docData.updatedAt,
+            deliveryAddress: docData.deliveryAddress,
+            proposal: docData.proposal,
+          } as Project;
+        });
         this.projects = data;
       })
       .catch((err) => {
