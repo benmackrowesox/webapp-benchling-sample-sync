@@ -168,7 +168,7 @@ function handleCanadianSites(data: any[], res: NextApiResponse<MapDataResponse>,
     const site: CanadianSite = {
       site_id: row.site_ID || row.site_id || '',
       company: row.company_person || row.company || '',
-      species: cleanSpeciesName(row.species) || '',
+species: row.species ? cleanSpeciesName(row.species) : '',
       species_type: row.species_type || '',
       location: row.location || row.site_name || '',
       province: row.region || row.province || getProvinceName(rowProvince),
