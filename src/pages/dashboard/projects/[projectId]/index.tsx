@@ -32,7 +32,7 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LinkIcon from "@mui/icons-material/Link";
-import { AuthGuard, ApprovedUserGuard } from "../../../../components/authentication/auth-guard";
+import { AuthGuard, ApprovedUserGuard, AdminGuard } from "../../../../components/authentication/auth-guard";
 import { DashboardLayout } from "../../../../components/dashboard/dashboard-layout";
 import { useMounted } from "../../../../hooks/use-mounted";
 import { gtm } from "../../../../lib/client/gtm";
