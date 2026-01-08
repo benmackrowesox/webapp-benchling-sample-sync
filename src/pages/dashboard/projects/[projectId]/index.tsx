@@ -66,11 +66,17 @@ const ProjectDetailsPage: NextPage = () => {
   const [linking, setLinking] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!projectId || !user) return;
+    if (!projectId) return;
 
     try {
       setLoading(true);
       setError(null);
+      
+      // Don't fetch if no user (waiting for auth)
+      if (!user) {
+        setLoading(false);
+        return;
+      }
       
       // Fetch project
       const projectData = await sendRequest<undefined, ProjectWithStats>(
@@ -124,7 +130,7 @@ const ProjectDetailsPage: NextPage = () => {
 
   useEffect(() => {
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, user, projectId]);
 
   const handleLinkOrder = async () => {
     if (!selectedOrderId || !projectId) return;
