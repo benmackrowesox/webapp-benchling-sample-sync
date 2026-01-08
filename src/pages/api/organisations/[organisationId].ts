@@ -4,7 +4,6 @@ import {
   getOrganisation,
   updateOrganisation,
   isUserInOrganisation,
-  isAdmin,
 } from "src/lib/server/firebase-admin";
 import { UpdateOrganisationRequest } from "src/types/organisation";
 

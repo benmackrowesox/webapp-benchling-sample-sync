@@ -3,9 +3,9 @@ import {
   firebaseServerAdmin,
   getAllOrganisations,
   createOrganisation,
-  isAdmin,
   getUserEmail,
 } from "src/lib/server/firebase-admin";
+import { isAdmin } from "src/lib/server/admin";
 import { Organisation, CreateOrganisationRequest } from "src/types/organisation";
 
 async function decodeToken(req: NextApiRequest) {
