@@ -66,31 +66,42 @@ const ProjectDetailsPage: NextPage = () => {
   const [linking, setLinking] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!projectId) return;
+    if (!projectId) {
+      console.log("[fetchData] No projectId, returning early");
+      return;
+    }
 
     try {
       setLoading(true);
       setError(null);
+      console.log("[fetchData] Starting fetch for project:", projectId);
+      console.log("[fetchData] User:", user?.id, user?.email);
       
       // Don't fetch if no user (waiting for auth)
       if (!user) {
+        console.log("[fetchData] No user, returning early");
         setLoading(false);
         return;
       }
       
+      console.log("[fetchData] Calling API for project:", projectId);
       // Fetch project
       const projectData = await sendRequest<undefined, ProjectWithStats>(
         `/api/projects/${projectId}`,
         "GET"
       );
       
+      console.log("[fetchData] Got response:", projectData);
+      
       if (!projectData) {
+        console.log("[fetchData] No project data returned");
         setError("Project not found");
         setLoading(false);
         return;
       }
       
       if (isMounted()) {
+        console.log("[fetchData] Setting project:", projectData);
         setProject(projectData);
       }
 
@@ -122,7 +133,8 @@ const ProjectDetailsPage: NextPage = () => {
       }
     } catch (error) {
       console.error("Error fetching project data:", error);
-      setError("Failed to load project data");
+      console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+      setError("Failed to load project data: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setLoading(false);
     }
