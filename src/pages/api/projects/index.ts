@@ -197,12 +197,14 @@ export default async function handler(
         title: request.title,
         message: "Project created successfully.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating project:", error);
       // Return more detailed error info for debugging
-      const errorMessage = error?.message || error?.toString() || "Unknown error";
-      const errorCode = error?.code || "UNKNOWN";
-      console.error("Error details:", { message: errorMessage, code: errorCode });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const err = error as any;
+      const errorMessage = err?.message || err?.details || String(error);
+      const errorCode = err?.code || "UNKNOWN";
+      console.error("Error details:", { message: errorMessage, code: errorCode, stack: err?.stack });
       res.status(500).json({ 
         error: "Unexpected error.", 
         details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
