@@ -542,9 +542,10 @@ const OrganisationsPage: NextPage = () => {
                 />
               )}
               renderOption={(props, option) => {
-                const { key, ...optionProps } = props;
+                // Cast props to allow key extraction
+                const optionProps = props as React.HTMLAttributes<HTMLLIElement> & { key?: string };
                 return (
-                  <li key={key} {...optionProps}>
+                  <li key={option.id} {...optionProps}>
                     <Box>
                       <Typography variant="body1">
                         {option.firstName} {option.lastName}
