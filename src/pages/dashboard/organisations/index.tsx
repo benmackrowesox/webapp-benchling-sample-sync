@@ -215,6 +215,7 @@ const OrganisationsPage: NextPage = () => {
   };
 
   const handleAddUser = async () => {
+    console.log("[handleAddUser] Called", { selectedOrg, addUserForm });
     if (!selectedOrg || !addUserForm.selectedUser || !addUserForm.selectedUser.email) {
       return;
     }
