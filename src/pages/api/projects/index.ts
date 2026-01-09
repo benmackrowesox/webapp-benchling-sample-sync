@@ -180,6 +180,7 @@ export default async function handler(
       const userEmail = await getUserEmail(token.uid);
       console.log("[Projects API] User email:", userEmail);
 
+      // Build project object, excluding undefined/null values
       const newProject: Omit<Project, "id"> = {
         title: request.title,
         description: request.description,
@@ -192,9 +193,16 @@ export default async function handler(
         createdBy: token.uid,
         createdAt: now,
         updatedAt: now,
-        deliveryAddress: request.deliveryAddress,
-        proposal: request.proposal,
       };
+
+      // Only add optional fields if they have values
+      if (request.deliveryAddress) {
+        newProject.deliveryAddress = request.deliveryAddress;
+      }
+      if (request.proposal) {
+        newProject.proposal = request.proposal;
+      }
+
       console.log("[Projects API] Creating project with data:", newProject);
 
       console.log("[Projects API] Adding project to Firestore...");
