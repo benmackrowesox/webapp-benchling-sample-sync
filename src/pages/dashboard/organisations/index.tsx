@@ -78,6 +78,8 @@ const OrganisationsPage: NextPage = () => {
     selectedUser: null,
     role: "member",
   });
+  const [addUserLoading, setAddUserLoading] = useState(false);
+  const [addUserError, setAddUserError] = useState<string | null>(null);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuOrgId, setMenuOrgId] = useState<string | null>(null);
 
@@ -209,12 +211,16 @@ const OrganisationsPage: NextPage = () => {
     setAddUserDialogOpen(false);
     setSelectedOrg(null);
     setAddUserForm({ selectedUser: null, role: "member" });
+    setAddUserError(null);
   };
 
   const handleAddUser = async () => {
     if (!selectedOrg || !addUserForm.selectedUser || !addUserForm.selectedUser.email) {
       return;
     }
+
+    setAddUserLoading(true);
+    setAddUserError(null);
 
     try {
       await sendRequest(`/api/organisations/${selectedOrg.id}`, "POST", {
@@ -229,8 +235,11 @@ const OrganisationsPage: NextPage = () => {
         setSelectedOrg({ ...updatedOrg, userCount: updatedOrg.users.length + 1 });
       }
       handleCloseAddUser();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding user:", error);
+      setAddUserError(error?.message || "Failed to add user. Please try again.");
+    } finally {
+      setAddUserLoading(false);
     }
   };
 
@@ -577,16 +586,22 @@ const OrganisationsPage: NextPage = () => {
                 <MenuItem value="viewer">Viewer - Read-only access</MenuItem>
               </Select>
             </FormControl>
+            {addUserError && (
+              <Typography color="error" variant="body2">
+                {addUserError}
+              </Typography>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddUser}>Cancel</Button>
+          <Button onClick={handleCloseAddUser} disabled={addUserLoading}>Cancel</Button>
           <Button
             variant="contained"
             onClick={handleAddUser}
-            disabled={!addUserForm.selectedUser}
+            disabled={!addUserForm.selectedUser || addUserLoading}
+            startIcon={addUserLoading ? <CircularProgress size={16} color="inherit" /> : null}
           >
-            Add User
+            {addUserLoading ? "Adding..." : "Add User"}
           </Button>
         </DialogActions>
       </Dialog>
