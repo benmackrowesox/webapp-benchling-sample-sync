@@ -23,16 +23,22 @@ import {
   Paper,
   IconButton,
   Chip,
+  Menu,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { AdminGuard } from "../../../components/authentication/auth-guard";
 import { DashboardLayout } from "../../../components/dashboard/dashboard-layout";
 import { useMounted } from "../../../hooks/use-mounted";
 import { gtm } from "../../../lib/client/gtm";
 import { useTypedAuth } from "src/hooks/use-auth";
-import type { Organisation } from "src/types/organisation";
+import type { Organisation, OrganisationUser, OrganisationUserRole } from "src/types/organisation";
 
 interface OrganisationWithStats extends Organisation {
   userCount: number;
@@ -46,10 +52,20 @@ const OrganisationsPage: NextPage = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Organisation | null>(null);
+  const [usersDialogOpen, setUsersDialogOpen] = useState(false);
+  const [selectedOrg, setSelectedOrg] = useState<OrganisationWithStats | null>(null);
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
+  const [addUserForm, setAddUserForm] = useState({
+    userId: "",
+    email: "",
+    role: "member" as OrganisationUserRole,
+  });
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [menuOrgId, setMenuOrgId] = useState<string | null>(null);
 
   useEffect(() => {
     gtm.push({ event: "page_view" });
@@ -147,12 +163,93 @@ const OrganisationsPage: NextPage = () => {
     }
   };
 
+  const handleViewUsers = (org: OrganisationWithStats) => {
+    setSelectedOrg(org);
+    setUsersDialogOpen(true);
+    setMenuAnchor(null);
+  };
+
+  const handleOpenAddUser = (org: OrganisationWithStats) => {
+    setSelectedOrg(org);
+    setAddUserForm({ userId: "", email: "", role: "member" });
+    setAddUserDialogOpen(true);
+    setMenuAnchor(null);
+  };
+
+  const handleCloseAddUser = () => {
+    setAddUserDialogOpen(false);
+    setSelectedOrg(null);
+    setAddUserForm({ userId: "", email: "", role: "member" });
+  };
+
+  const handleAddUser = async () => {
+    if (!selectedOrg || !addUserForm.userId || !addUserForm.email) {
+      return;
+    }
+
+    try {
+      await sendRequest(`/api/organisations/${selectedOrg.id}`, "POST", addUserForm);
+      await fetchOrganisations();
+      // Refresh selected org data
+      const updatedOrg = organisations.find((o) => o.id === selectedOrg.id);
+      if (updatedOrg) {
+        setSelectedOrg({ ...updatedOrg, userCount: updatedOrg.users.length + 1 });
+      }
+      handleCloseAddUser();
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
+  };
+
+  const handleRemoveUser = async (userId: string) => {
+    if (!selectedOrg || !confirm("Are you sure you want to remove this user from the organisation?")) {
+      return;
+    }
+
+    try {
+      await sendRequest(`/api/organisations/${selectedOrg.id}?userId=${userId}`, "DELETE");
+      await fetchOrganisations();
+      // Refresh selected org data
+      const updatedOrg = organisations.find((o) => o.id === selectedOrg.id);
+      if (updatedOrg) {
+        setSelectedOrg({ ...updatedOrg, userCount: updatedOrg.users.length - 1 });
+      }
+    } catch (error) {
+      console.error("Error removing user:", error);
+    }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, orgId: string) => {
+    setMenuAnchor(event.currentTarget);
+    setMenuOrgId(orgId);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+    setMenuOrgId(null);
+  };
+
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
+  };
+
+  const getRoleColor = (role: OrganisationUserRole): "success" | "info" | "default" | "warning" => {
+    switch (role) {
+      case "owner":
+        return "warning";
+      case "admin":
+        return "info";
+      case "member":
+        return "success";
+      case "viewer":
+        return "default";
+      default:
+        return "default";
+    }
   };
 
   return (
@@ -221,6 +318,12 @@ const OrganisationsPage: NextPage = () => {
                       <TableCell align="right">
                         <IconButton
                           size="small"
+                          onClick={() => handleViewUsers(org)}
+                        >
+                          <MoreVertIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
                           onClick={() => handleOpenDialog(org)}
                         >
                           <EditIcon fontSize="small" />
@@ -281,6 +384,126 @@ const OrganisationsPage: NextPage = () => {
             disabled={!formData.name.trim()}
           >
             {editingOrg ? "Save Changes" : "Create"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Users Dialog */}
+      <Dialog open={usersDialogOpen} onClose={() => setUsersDialogOpen(false)} maxWidth="md" fullWidth>
+        <DialogTitle>
+          Organisation Users
+          {selectedOrg && ` - ${selectedOrg.name}`}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenAddUser(selectedOrg!)}
+            >
+              Add User
+            </Button>
+          </Box>
+          <TableContainer component={Paper} variant="outlined">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Role</TableCell>
+                  <TableCell>Joined</TableCell>
+                  <TableCell align="right">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {selectedOrg?.users.map((user) => (
+                  <TableRow key={user.userId}>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.name}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.role}
+                        color={getRoleColor(user.role)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{formatDate(user.joinedAt)}</TableCell>
+                    <TableCell align="right">
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveUser(user.userId)}
+                        color="error"
+                        disabled={user.role === "owner"}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {selectedOrg?.users.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} align="center">
+                      <Typography variant="body2" color="textSecondary" sx={{ py: 2 }}>
+                        No users in this organisation. Add users to get started.
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setUsersDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={addUserDialogOpen} onClose={handleCloseAddUser} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          Add User to Organisation
+          {selectedOrg && ` - ${selectedOrg.name}`}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+            <TextField
+              fullWidth
+              label="User ID"
+              value={addUserForm.userId}
+              onChange={(e) => setAddUserForm({ ...addUserForm, userId: e.target.value })}
+              required
+              helperText="The Firebase user ID of the user to add"
+            />
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={addUserForm.email}
+              onChange={(e) => setAddUserForm({ ...addUserForm, email: e.target.value })}
+              required
+            />
+            <FormControl fullWidth>
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={addUserForm.role}
+                label="Role"
+                onChange={(e) => setAddUserForm({ ...addUserForm, role: e.target.value as OrganisationUserRole })}
+              >
+                <MenuItem value="admin">Admin - Can manage projects and samples</MenuItem>
+                <MenuItem value="member">Member - Can submit samples</MenuItem>
+                <MenuItem value="viewer">Viewer - Read-only access</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddUser}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleAddUser}
+            disabled={!addUserForm.userId.trim() || !addUserForm.email.trim()}
+          >
+            Add User
           </Button>
         </DialogActions>
       </Dialog>

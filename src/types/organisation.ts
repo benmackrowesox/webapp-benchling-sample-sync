@@ -54,6 +54,16 @@ export interface UpdateOrganisationRequest {
   isActive?: boolean;
 }
 
+export interface AddUserRequest {
+  userId: string;
+  email: string;
+  role?: OrganisationUserRole;
+}
+
+export interface RemoveUserRequest {
+  userId: string;
+}
+
 export interface OrganisationSummary {
   id: string;
   name: string;
