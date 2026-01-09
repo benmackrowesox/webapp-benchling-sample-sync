@@ -59,6 +59,7 @@ export const getUserDetails = async (
         contactNo: data.contactNo,
         role: data.role,
         dateRegistered: data.dateRegistered,
+        organisationId: data.organisationId,
       };
       return user;
     })
@@ -157,6 +158,14 @@ export const addUserToOrganisation = async (
       users: updatedUsers,
       updatedAt: Date.now(),
     });
+  
+  // Also update the user's profile with their organisationId
+  await firebaseServerAdmin
+    .firestore()
+    .doc(`new_users/${userId}`)
+    .set({
+      organisationId: organisationId,
+    }, { merge: true });
 };
 
 export const removeUserFromOrganisation = async (

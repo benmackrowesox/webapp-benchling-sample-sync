@@ -55,6 +55,7 @@ export const getUserDetails = async (
       awaitingApproval: data.awaitingApproval,
       dateRegistered: data.dateRegistered,
       contactNo: data.contactNo,
+      organisationId: data.organisationId,
     };
   } else {
     return Promise.reject("No such user found.");
