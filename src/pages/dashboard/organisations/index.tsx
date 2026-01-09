@@ -529,6 +529,7 @@ const OrganisationsPage: NextPage = () => {
             <Autocomplete
               options={getAvailableUsers()}
               getOptionLabel={getUserOptionLabel}
+              getOptionKey={(option) => option.id}
               value={addUserForm.selectedUser}
               onChange={(_, newValue) => {
                 setAddUserForm({ ...addUserForm, selectedUser: newValue });
@@ -551,10 +552,8 @@ const OrganisationsPage: NextPage = () => {
                 />
               )}
               renderOption={(props, option) => {
-                // Cast props to allow key extraction
-                const optionProps = props as React.HTMLAttributes<HTMLLIElement> & { key?: string };
                 return (
-                  <li key={option.id} {...optionProps}>
+                  <li key={option.id} {...props}>
                     <Box>
                       <Typography variant="body1">
                         {option.firstName} {option.lastName}
