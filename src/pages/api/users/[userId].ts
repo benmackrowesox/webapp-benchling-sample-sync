@@ -33,6 +33,7 @@ export default async function handler(
 
   if (req.method == "POST") {
     const newUser: firestoreUser = {
+      email: body.email,
       firstName: body.firstName,
       lastName: body.lastName,
       company: body.company,

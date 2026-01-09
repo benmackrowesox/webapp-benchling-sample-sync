@@ -44,6 +44,7 @@ export const getUserDetails = async (
         throw "";
       }
       const user: firestoreUser = {
+        email: data.email,
         firstName: data.firstName,
         lastName: data.lastName,
         postcode: data.postcode,

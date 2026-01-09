@@ -254,6 +254,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
       user.password
     );
     const firestoreUser: Partial<firestoreUser> = {
+      email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
       company: user.company,

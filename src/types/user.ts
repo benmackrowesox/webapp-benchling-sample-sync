@@ -10,6 +10,7 @@ export interface InternalUser {
 }
 
 export type firestoreUser = {
+  email: string;
   firstName: string;
   lastName: string;
   company: string;

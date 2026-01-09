@@ -40,6 +40,7 @@ export const getUserDetails = async (
   if (docSnap.exists()) {
     const data = docSnap.data();
     return {
+      email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
       postcode: data.postcode,
