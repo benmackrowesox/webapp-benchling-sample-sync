@@ -28,6 +28,8 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Autocomplete,
+  CircularProgress,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -39,6 +41,14 @@ import { useMounted } from "../../../hooks/use-mounted";
 import { gtm } from "../../../lib/client/gtm";
 import { useTypedAuth } from "src/hooks/use-auth";
 import type { Organisation, OrganisationUser, OrganisationUserRole } from "src/types/organisation";
+
+interface UserListItem {
+  id: string;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  company: string | null;
+}
 
 interface OrganisationWithStats extends Organisation {
   userCount: number;
@@ -55,14 +65,18 @@ const OrganisationsPage: NextPage = () => {
   const [usersDialogOpen, setUsersDialogOpen] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState<OrganisationWithStats | null>(null);
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [allUsers, setAllUsers] = useState<UserListItem[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
   });
-  const [addUserForm, setAddUserForm] = useState({
-    userId: "",
-    email: "",
-    role: "member" as OrganisationUserRole,
+  const [addUserForm, setAddUserForm] = useState<{
+    selectedUser: UserListItem | null;
+    role: OrganisationUserRole;
+  }>({
+    selectedUser: null,
+    role: "member",
   });
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuOrgId, setMenuOrgId] = useState<string | null>(null);
@@ -109,6 +123,20 @@ const OrganisationsPage: NextPage = () => {
       console.error("Error fetching organisations:", error);
     } finally {
       setLoading(false);
+    }
+  }, [isMounted, sendRequest]);
+
+  const fetchAllUsers = useCallback(async () => {
+    try {
+      setUsersLoading(true);
+      const users = await sendRequest<undefined, UserListItem[]>("/api/users/list", "GET");
+      if (isMounted() && users) {
+        setAllUsers(users);
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setUsersLoading(false);
     }
   }, [isMounted, sendRequest]);
 
@@ -171,24 +199,29 @@ const OrganisationsPage: NextPage = () => {
 
   const handleOpenAddUser = (org: OrganisationWithStats) => {
     setSelectedOrg(org);
-    setAddUserForm({ userId: "", email: "", role: "member" });
+    setAddUserForm({ selectedUser: null, role: "member" });
     setAddUserDialogOpen(true);
     setMenuAnchor(null);
+    fetchAllUsers();
   };
 
   const handleCloseAddUser = () => {
     setAddUserDialogOpen(false);
     setSelectedOrg(null);
-    setAddUserForm({ userId: "", email: "", role: "member" });
+    setAddUserForm({ selectedUser: null, role: "member" });
   };
 
   const handleAddUser = async () => {
-    if (!selectedOrg || !addUserForm.userId || !addUserForm.email) {
+    if (!selectedOrg || !addUserForm.selectedUser || !addUserForm.selectedUser.email) {
       return;
     }
 
     try {
-      await sendRequest(`/api/organisations/${selectedOrg.id}`, "POST", addUserForm);
+      await sendRequest(`/api/organisations/${selectedOrg.id}`, "POST", {
+        userId: addUserForm.selectedUser.id,
+        email: addUserForm.selectedUser.email,
+        role: addUserForm.role,
+      });
       await fetchOrganisations();
       // Refresh selected org data
       const updatedOrg = organisations.find((o) => o.id === selectedOrg.id);
@@ -250,6 +283,24 @@ const OrganisationsPage: NextPage = () => {
       default:
         return "default";
     }
+  };
+
+  // Get users not already in the organisation
+  const getAvailableUsers = () => {
+    if (!selectedOrg) return allUsers;
+    const existingUserIds = new Set(selectedOrg.users.map((u) => u.userId));
+    return allUsers.filter((u) => !existingUserIds.has(u.id));
+  };
+
+  const getUserOptionLabel = (option: UserListItem | string) => {
+    if (typeof option === "string") return option;
+    const name = `${option.firstName} ${option.lastName}`.trim();
+    return option.email || name || option.id;
+  };
+
+  const isUserAlreadyInOrg = (userId: string) => {
+    if (!selectedOrg) return false;
+    return selectedOrg.users.some((u) => u.userId === userId);
   };
 
   return (
@@ -465,22 +516,53 @@ const OrganisationsPage: NextPage = () => {
           {selectedOrg && ` - ${selectedOrg.name}`}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            <TextField
-              fullWidth
-              label="User ID"
-              value={addUserForm.userId}
-              onChange={(e) => setAddUserForm({ ...addUserForm, userId: e.target.value })}
-              required
-              helperText="The Firebase user ID of the user to add"
-            />
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={addUserForm.email}
-              onChange={(e) => setAddUserForm({ ...addUserForm, email: e.target.value })}
-              required
+          <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 3 }}>
+            <Autocomplete
+              options={getAvailableUsers()}
+              getOptionLabel={getUserOptionLabel}
+              value={addUserForm.selectedUser}
+              onChange={(_, newValue) => {
+                setAddUserForm({ ...addUserForm, selectedUser: newValue });
+              }}
+              loading={usersLoading}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Select User"
+                  placeholder="Search by name or email"
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <>
+                        {usersLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                        {params.InputProps.endAdornment}
+                      </>
+                    ),
+                  }}
+                />
+              )}
+              renderOption={(props, option) => {
+                const { key, ...optionProps } = props;
+                return (
+                  <li key={key} {...optionProps}>
+                    <Box>
+                      <Typography variant="body1">
+                        {option.firstName} {option.lastName}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {option.email || "No email"} {option.company && `• ${option.company}`}
+                      </Typography>
+                    </Box>
+                  </li>
+                );
+              }}
+              noOptionsText={
+                usersLoading
+                  ? "Loading users..."
+                  : getAvailableUsers().length === 0
+                  ? "All users are already in this organisation"
+                  : "No users found"
+              }
             />
             <FormControl fullWidth>
               <InputLabel>Role</InputLabel>
@@ -501,7 +583,7 @@ const OrganisationsPage: NextPage = () => {
           <Button
             variant="contained"
             onClick={handleAddUser}
-            disabled={!addUserForm.userId.trim() || !addUserForm.email.trim()}
+            disabled={!addUserForm.selectedUser}
           >
             Add User
           </Button>
