@@ -130,6 +130,11 @@ export const AdminOrApprovedGuard: FC<AuthGuardProps> = (props) => {
   const { user } = useTypedAuth();
 
   console.log("[AdminOrApprovedGuard] Checking user:", user?.id);
+  console.log("[AdminOrApprovedGuard] User details:", {
+    isAdmin: user?.isAdmin,
+    isApproved: user?.isApproved,
+    emailVerified: user?.emailVerified,
+  });
 
   const isApproved = (user?.isApproved && user?.emailVerified) || false;
   const isAdmin = user?.isAdmin || false;
@@ -139,9 +144,15 @@ export const AdminOrApprovedGuard: FC<AuthGuardProps> = (props) => {
   console.log("[AdminOrApprovedGuard] canView:", canView, { isApproved, isAdmin });
 
   if (!canView) {
-    return guardFailedChildren ? <>{guardFailedChildren}</> : null;
+    console.log("[AdminOrApprovedGuard] User cannot view, returning null");
+    if (guardFailedChildren) {
+      console.log("[AdminOrApprovedGuard] Rendering guardFailedChildren");
+      return <>{guardFailedChildren}</>;
+    }
+    return null;
   }
 
+  console.log("[AdminOrApprovedGuard] User can view, rendering children");
   return <>{children}</>;
 };
 
