@@ -37,13 +37,26 @@ export const ApprovedUserGuard: FC<AuthGuardProps> = (props) => {
   const { user } = useTypedAuth();
 
   console.log("[ApprovedUserGuard] Checking user:", user?.id);
+  console.log("[ApprovedUserGuard] User details:", {
+    isApproved: user?.isApproved,
+    emailVerified: user?.emailVerified,
+  });
 
-  const canView: boolean = (user?.isApproved && user.emailVerified) || false;
+  const canView: boolean = (user?.isApproved && user?.emailVerified) || false;
+  console.log("[ApprovedUserGuard] canView:", canView);
 
   if (!canView) {
-    return guardFailedChildren ? <>{guardFailedChildren}</> : null;
+    console.log("[ApprovedUserGuard] User cannot view");
+    if (guardFailedChildren) {
+      console.log("[ApprovedUserGuard] Rendering guardFailedChildren");
+      return <>{guardFailedChildren}</>;
+    }
+    // Still return children but with a warning - this is for the sidebar case
+    console.log("[ApprovedUserGuard] No guardFailedChildren, rendering children anyway for sidebar");
+    return <>{children}</>;
   }
 
+  console.log("[ApprovedUserGuard] User can view, rendering children");
   return <>{children}</>;
 };
 
