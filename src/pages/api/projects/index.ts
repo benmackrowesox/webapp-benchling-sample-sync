@@ -209,7 +209,7 @@ export default async function handler(
         title: request.title,
         message: "Project created successfully.",
       });
-    } catch (error) {
+     } catch (error) {
       console.error("[Projects API] Error creating project:", error);
       // Return more detailed error info for debugging
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,8 +219,9 @@ export default async function handler(
       console.error("[Projects API] Error details:", { message: errorMessage, code: errorCode, stack: err?.stack });
       res.status(500).json({ 
         error: "Unexpected error.", 
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-        code: errorCode
+        details: errorMessage,
+        code: errorCode,
+        stack: err?.stack
       });
     }
     return;

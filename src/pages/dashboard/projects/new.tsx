@@ -153,8 +153,14 @@ const NewProjectPage: NextPage = () => {
       console.error("Error response data:", error.response?.data);
       console.error("Error status:", error.response?.status);
       // Show more details in toast for debugging
-      const details = error.response?.data?.details || error.response?.data?.code || "";
+      const errorData = error.response?.data || {};
+      const details = errorData.details || errorData.code || errorData.error || "";
+      const stack = errorData.stack || "";
       toast.error(error?.message || `Failed to create project. ${details ? `Details: ${details}` : ""}`);
+      // Log stack trace for debugging
+      if (stack) {
+        console.error("Stack trace:", stack);
+      }
     } finally {
       setLoading(false);
     }
