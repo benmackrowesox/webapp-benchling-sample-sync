@@ -150,7 +150,11 @@ const NewProjectPage: NextPage = () => {
       router.push(`/dashboard/projects/${response.id}`);
     } catch (error: any) {
       console.error("Error creating project:", error);
-      toast.error(error?.message || "Failed to create project.");
+      console.error("Error response data:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      // Show more details in toast for debugging
+      const details = error.response?.data?.details || error.response?.data?.code || "";
+      toast.error(error?.message || `Failed to create project. ${details ? `Details: ${details}` : ""}`);
     } finally {
       setLoading(false);
     }

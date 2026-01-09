@@ -197,9 +197,17 @@ export default async function handler(
         title: request.title,
         message: "Project created successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating project:", error);
-      res.status(500).send("Unexpected error.");
+      // Return more detailed error info for debugging
+      const errorMessage = error?.message || error?.toString() || "Unknown error";
+      const errorCode = error?.code || "UNKNOWN";
+      console.error("Error details:", { message: errorMessage, code: errorCode });
+      res.status(500).json({ 
+        error: "Unexpected error.", 
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        code: errorCode
+      });
     }
     return;
   }
