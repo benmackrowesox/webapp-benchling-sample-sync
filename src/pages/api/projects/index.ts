@@ -210,15 +210,24 @@ export default async function handler(
         message: "Project created successfully.",
       });
      } catch (error) {
-      console.error("[Projects API] Error creating project:", error);
+      console.error("[Projects API] === RAW ERROR ===");
+      console.error("[Projects API] error:", error);
+      console.error("[Projects API] typeof error:", typeof error);
+      console.error("[Projects API] error.constructor.name:", error?.constructor?.name);
+      console.error("[Projects API] error toString:", String(error));
+      console.error("[Projects API] ===================");
+      
       // Return more detailed error info for debugging
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
-      const errorMessage = err?.message || err?.details || String(error);
-      const errorCode = err?.code || "UNKNOWN";
-      console.error("[Projects API] Error details:", { message: errorMessage, code: errorCode, stack: err?.stack });
+      const errorMessage = err?.message || err?.details || err?.reason || String(error);
+      const errorCode = err?.code || err?.name || "UNKNOWN";
+      console.error("[Projects API] Parsed error:", { message: errorMessage, code: errorCode });
+      console.error("[Projects API] Stack trace:", err?.stack);
+      
       res.status(500).json({ 
         error: "Unexpected error.", 
+        errorType: error?.constructor?.name,
         details: errorMessage,
         code: errorCode,
         stack: err?.stack
