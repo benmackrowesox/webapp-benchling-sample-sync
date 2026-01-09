@@ -137,8 +137,12 @@ export default async function handler(
 
   // POST - Create new project (admin only)
   if (req.method === "POST") {
+    console.log("[Projects API] POST request received");
+    
     try {
+      console.log("[Projects API] Checking if user is admin...");
       const isUserAdmin = await checkIsUserAdmin(token.uid);
+      console.log("[Projects API] isUserAdmin:", isUserAdmin);
       
       if (!isUserAdmin) {
         res.status(403).send("Not authorized. Admin access required.");
@@ -146,6 +150,7 @@ export default async function handler(
       }
 
       const request: CreateProjectRequest = req.body;
+      console.log("[Projects API] Request body:", request);
 
       if (!request.title || request.title.trim().length === 0) {
         res.status(400).send("Project title is required.");
@@ -158,10 +163,12 @@ export default async function handler(
       }
 
       // Verify organisation exists
+      console.log("[Projects API] Verifying organisation:", request.organisationId);
       const orgDoc = await firebaseServerAdmin
         .firestore()
         .doc(`organisations/${request.organisationId}`)
         .get();
+      console.log("[Projects API] Organisation exists:", orgDoc.exists);
 
       if (!orgDoc.exists) {
         res.status(400).send("Organisation not found.");
@@ -169,7 +176,9 @@ export default async function handler(
       }
 
       const now = Date.now();
+      console.log("[Projects API] Getting user email for:", token.uid);
       const userEmail = await getUserEmail(token.uid);
+      console.log("[Projects API] User email:", userEmail);
 
       const newProject: Omit<Project, "id"> = {
         title: request.title,
@@ -186,11 +195,14 @@ export default async function handler(
         deliveryAddress: request.deliveryAddress,
         proposal: request.proposal,
       };
+      console.log("[Projects API] Creating project with data:", newProject);
 
+      console.log("[Projects API] Adding project to Firestore...");
       const docRef = await firebaseServerAdmin
         .firestore()
         .collection("projects")
         .add(newProject);
+      console.log("[Projects API] Project created with ID:", docRef.id);
 
       res.status(200).send({
         id: docRef.id,
@@ -198,13 +210,13 @@ export default async function handler(
         message: "Project created successfully.",
       });
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("[Projects API] Error creating project:", error);
       // Return more detailed error info for debugging
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const err = error as any;
       const errorMessage = err?.message || err?.details || String(error);
       const errorCode = err?.code || "UNKNOWN";
-      console.error("Error details:", { message: errorMessage, code: errorCode, stack: err?.stack });
+      console.error("[Projects API] Error details:", { message: errorMessage, code: errorCode, stack: err?.stack });
       res.status(500).json({ 
         error: "Unexpected error.", 
         details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
