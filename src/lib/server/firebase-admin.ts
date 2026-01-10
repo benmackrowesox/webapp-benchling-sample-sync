@@ -191,6 +191,30 @@ export const removeUserFromOrganisation = async (
 export const getUserOrganisation = async (
   userId: string,
 ): Promise<Organisation | null> => {
+  // First, try to get the organisation from the user's profile (more reliable)
+  try {
+    const userDoc = await firebaseServerAdmin
+      .firestore()
+      .doc(`new_users/${userId}`)
+      .get();
+    
+    if (userDoc.exists) {
+      const userData = userDoc.data();
+      const organisationId = userData?.organisationId;
+      
+      if (organisationId) {
+        // Try to get the organisation by ID
+        const org = await getOrganisation(organisationId);
+        if (org) {
+          return org;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching user org from profile:", error);
+  }
+  
+  // Fallback: Query organisations by looking for user in users array
   const snapshot = await firebaseServerAdmin
     .firestore()
     .collection("organisations")
