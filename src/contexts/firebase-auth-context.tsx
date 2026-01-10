@@ -135,6 +135,7 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
                 isAdmin: userDetails?.isAdmin || false,
                 isApproved: isApprovedUser,
                 emailVerified: user.emailVerified || false,
+                organisationId: userDetails?.organisationId,
               },
             },
           });
