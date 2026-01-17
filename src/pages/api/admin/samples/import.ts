@@ -1,0 +1,81 @@
+/**
+ * Admin Samples Import API
+ * 
+ * Handles initial import of all EBM samples from Benchling.
+ */
+
+import { NextApiRequest, NextApiResponse } from "next/types";
+import { firebaseServerAdmin } from "src/lib/server/firebase-admin";
+import { importFromBenchling, getSyncStatus } from "src/lib/server/sync";
+
+async function decodeToken(req: NextApiRequest) {
+  const idToken = req.headers.authorization;
+
+  if (!idToken) {
+    return null;
+  }
+
+  const decodedToken = await firebaseServerAdmin.auth().verifyIdToken(idToken);
+
+  return decodedToken;
+}
+
+async function isAdmin(uid: string): Promise<boolean> {
+  const userDoc = await firebaseServerAdmin
+    .firestore()
+    .doc(`/new_users/${uid}`)
+    .get();
+
+  return userDoc.data()?.isAdmin ?? false;
+}
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const token = await decodeToken(req);
+  if (!token?.uid || !(await isAdmin(token.uid))) {
+    res.status(401).json({ error: "Not authorized" });
+    return;
+  }
+
+  try {
+    // Check if import is already in progress
+    const status = await getSyncStatus();
+    
+    const db = firebaseServerAdmin.firestore();
+    const metadataDoc = await db.doc("benchling_samples/sync_metadata").get();
+    const metadata = metadataDoc.exists ? metadataDoc.data() : null;
+    
+    if (metadata?.importInProgress) {
+      res.status(409).json({ 
+        error: "Import already in progress",
+        progress: metadata.importProgress,
+      });
+      return;
+    }
+
+    // Start import
+    const importResult = await importFromBenchling();
+
+    res.status(200).json({
+      message: "Import completed successfully",
+      totalSamplesFound: importResult.total,
+      imported: importResult.imported,
+      errors: importResult.errors,
+      syncStatus: await getSyncStatus(),
+    });
+  } catch (error: any) {
+    console.error("Error during import:", error);
+    res.status(500).json({ 
+      error: "Import failed",
+      message: error.message,
+    });
+  }
+}
+
