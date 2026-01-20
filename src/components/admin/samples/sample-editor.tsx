@@ -7,7 +7,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { SyncedSample, SampleStatus } from "../../types/sync";
+import { SyncedSample, SampleStatus } from "../../../types/sync";
 
 interface SampleEditorProps {
   sample?: SyncedSample;
