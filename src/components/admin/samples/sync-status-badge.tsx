@@ -3,7 +3,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningIcon from "@mui/icons-material/Warning";
 import ErrorIcon from "@mui/icons-material/Error";
 import SyncIcon from "@mui/icons-material/Sync";
-import { SyncedSample } from "../../types/sync";
+import { SyncedSample } from "../../../types/sync";
 
 interface SyncStatusBadgeProps {
   sample: SyncedSample;

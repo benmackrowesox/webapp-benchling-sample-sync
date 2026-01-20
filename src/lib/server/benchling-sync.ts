@@ -7,7 +7,7 @@
 
 import axios from "axios";
 import { benchlingConfig } from "src/private-config";
-import { EBM_SAMPLE_CONFIG } from "src/types/sync";
+import { EBM_SAMPLE_CONFIG, SampleStatus } from "src/types/sync";
 import { v4 as uuidv4 } from "uuid";
 
 const apiKey = benchlingConfig.apiKey;
@@ -357,15 +357,21 @@ export function parseBenchlingFields(fields: Record<string, any>): {
   sampleType: string;
   sampleFormat: string;
   sampleDate: string;
-  sampleStatus: string;
+  sampleStatus: SampleStatus;
 } {
+  const rawStatus = extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId);
+  
+  // Validate and cast to SampleStatus type
+  const validStatuses: SampleStatus[] = ['pending', 'collected', 'received', 'processing', 'completed', 'archived', 'error'];
+  const sampleStatus: SampleStatus = validStatuses.includes(rawStatus as SampleStatus) ? rawStatus as SampleStatus : 'pending';
+  
   return {
     sampleId: "", // Sample ID comes from entityRegistryId, not a custom field
     clientName: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.clientName.benchlingFieldId),
     sampleType: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleType.benchlingFieldId),
     sampleFormat: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleFormat.benchlingFieldId),
     sampleDate: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId),
-    sampleStatus: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId),
+    sampleStatus,
   };
 }
 

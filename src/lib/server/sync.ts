@@ -190,15 +190,15 @@ function checkForConflict(
     localSample.lastSyncedFromBenchling &&
     new Date(localSample.lastSyncedFromWebapp) > new Date(localSample.lastSyncedFromBenchling);
   
-  const hasConflict = hasDifferentValues && benchlingIsNewer && localHasPendingChanges;
-  
-  return {
-    hasConflict,
+  const conflictResult: ConflictResult = {
+    hasConflict: Boolean(hasDifferentValues && benchlingIsNewer && localHasPendingChanges),
     webappData: localSample,
     benchlingData: benchlingParsed,
     webappLastModified: localSample.lastModified,
     benchlingLastModified: benchlingSample.modifiedAt,
   };
+  
+  return conflictResult;
 }
 
 /**
@@ -219,7 +219,7 @@ function shouldUpdateFromBenchling(
  * Create a new sample in both Firestore and Benchling
  */
 export async function createSample(
-  sampleData: Omit<SyncedSample, "id" | "benchlingId" | "syncVersion" | "createdAt" | "lastSyncedFromWebapp" | "lastSyncedFromBenchling">
+  sampleData: Omit<SyncedSample, "id" | "benchlingId" | "entityRegistryId" | "syncVersion" | "createdAt" | "lastSyncedFromWebapp" | "lastSyncedFromBenchling" | "lastModified" | "createdIn">
 ): Promise<string> {
   const db = firebaseServerAdmin.firestore();
   const now = new Date().toISOString();
@@ -237,6 +237,7 @@ export async function createSample(
     lastSyncedFromBenchling: "",
     syncVersion: 1,
     createdAt: now,
+    createdIn: "webapp",
   };
   
   // Save to Firestore
@@ -368,7 +369,7 @@ export async function processSyncQueue(): Promise<{
       item.attempts++;
       item.status = "processing";
       item.lastAttempt = new Date().toISOString();
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
       
       if (item.direction === "to-benchling") {
         await processToBenchling(item);
@@ -378,7 +379,7 @@ export async function processSyncQueue(): Promise<{
       
       item.status = "completed";
       item.completedAt = new Date().toISOString();
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
       processed++;
     } catch (error: any) {
       item.attempts++;
@@ -392,7 +393,7 @@ export async function processSyncQueue(): Promise<{
         item.status = "pending";
       }
       
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
     }
   }
   
