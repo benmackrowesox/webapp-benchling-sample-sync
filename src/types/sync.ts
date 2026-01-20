@@ -152,12 +152,12 @@ export const EBM_SAMPLE_CONFIG = {
   registryId: 'src_xro8e9rf',    // Registry ID
   idPrefix: 'EBM',               // Sample ID prefix
   fieldMapping: {
-    sampleId: { benchlingFieldId: 'entityRegistryId', isRequired: true }, // entityRegistryId is the registry ID field
-    clientName: { benchlingFieldId: 'tsf_1ItF8QUi', isRequired: true },
-    sampleType: { benchlingFieldId: 'tsf_E1ktWT2b', isRequired: true },
-    sampleFormat: { benchlingFieldId: 'tsf_stZCS21smu', isRequired: false },
-    sampleDate: { benchlingFieldId: 'tsf_MKDjGziQ', isRequired: true },
-    sampleStatus: { benchlingFieldId: 'tsf_PcrOui0bQJ', isRequired: true },
+    sampleId: { benchlingFieldId: 'entityRegistryId', localField: 'sampleId', isRequired: true }, // entityRegistryId is the registry ID field
+    clientName: { benchlingFieldId: 'tsf_1ItF8QUi', localField: 'clientName', isRequired: true },
+    sampleType: { benchlingFieldId: 'tsf_E1ktWT2b', localField: 'sampleType', isRequired: true },
+    sampleFormat: { benchlingFieldId: 'tsf_stZCS21smu', localField: 'sampleFormat', isRequired: false },
+    sampleDate: { benchlingFieldId: 'tsf_MKDjGziQ', localField: 'sampleDate', isRequired: true },
+    sampleStatus: { benchlingFieldId: 'tsf_PcrOui0bQJ', localField: 'sampleStatus', isRequired: true },
   } as Record<string, SampleFieldMapping>,
   syncIntervalMinutes: 10,
   maxRetries: 3,
