@@ -339,7 +339,7 @@ const AdminSamples: NextPage = () => {
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
-    severity: "success" | "error" | "info";
+    severity: "success" | "error" | "info" | "warning";
   }>({ open: false, message: "", severity: "info" });
 
   const fetchSamples = useCallback(async () => {
