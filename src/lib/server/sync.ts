@@ -219,7 +219,7 @@ function shouldUpdateFromBenchling(
  * Create a new sample in both Firestore and Benchling
  */
 export async function createSample(
-  sampleData: Omit<SyncedSample, "id" | "benchlingId" | "syncVersion" | "createdAt" | "lastSyncedFromWebapp" | "lastSyncedFromBenchling">
+  sampleData: Omit<SyncedSample, "id" | "benchlingId" | "entityRegistryId" | "syncVersion" | "createdAt" | "lastSyncedFromWebapp" | "lastSyncedFromBenchling" | "lastModified" | "createdIn">
 ): Promise<string> {
   const db = firebaseServerAdmin.firestore();
   const now = new Date().toISOString();
@@ -237,6 +237,7 @@ export async function createSample(
     lastSyncedFromBenchling: "",
     syncVersion: 1,
     createdAt: now,
+    createdIn: "webapp",
   };
   
   // Save to Firestore
