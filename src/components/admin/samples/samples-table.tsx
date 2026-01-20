@@ -14,7 +14,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SyncIcon from "@mui/icons-material/Sync";
-import { SyncedSample, SampleStatus } from "../../types/sync";
+import { SyncedSample, SampleStatus } from "../../../types/sync";
 import { SyncStatusBadge } from "./sync-status-badge";
 
 interface SamplesTableProps {
