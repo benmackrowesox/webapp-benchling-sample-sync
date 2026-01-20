@@ -190,15 +190,15 @@ function checkForConflict(
     localSample.lastSyncedFromBenchling &&
     new Date(localSample.lastSyncedFromWebapp) > new Date(localSample.lastSyncedFromBenchling);
   
-  const hasConflict = hasDifferentValues && benchlingIsNewer && localHasPendingChanges;
-  
-  return {
-    hasConflict,
+  const conflictResult: ConflictResult = {
+    hasConflict: Boolean(hasDifferentValues && benchlingIsNewer && localHasPendingChanges),
     webappData: localSample,
     benchlingData: benchlingParsed,
     webappLastModified: localSample.lastModified,
     benchlingLastModified: benchlingSample.modifiedAt,
   };
+  
+  return conflictResult;
 }
 
 /**
