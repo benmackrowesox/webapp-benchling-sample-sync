@@ -28,11 +28,11 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { AdminGuard } from "../../components/authentication/admin-guard";
-import { DashboardLayout } from "../../components/dashboard/dashboard-layout";
-import { useMounted } from "../../hooks/use-mounted";
-import { useAuth } from "../../hooks/use-auth";
-import { SyncedSample, SampleStatus } from "../../types/sync";
+import { AdminGuard } from "../../../components/authentication/admin-guard";
+import { DashboardLayout } from "../../../components/dashboard/dashboard-layout";
+import { useMounted } from "../../../hooks/use-mounted";
+import { useAuth } from "../../../hooks/use-auth";
+import { SyncedSample, SampleStatus } from "../../../types/sync";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
 import UploadIcon from "@mui/icons-material/Upload";
