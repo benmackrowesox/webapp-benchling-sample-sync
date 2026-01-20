@@ -23,6 +23,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import SetMealIcon from "@mui/icons-material/SetMeal";
 import { TestTubes as TestTubesIcon } from "src/icons/test-tubes";
 import { Home as HomeIcon } from "src/icons/home";
+import SyncIcon from "@mui/icons-material/Sync";
 
 interface DashboardSidebarProps {
   onClose?: () => void;
@@ -47,6 +48,11 @@ const getAdminSections = (): Section[] => [
   {
     title: "Admin",
     items: [
+      {
+        title: "Benchling Samples",
+        path: "/dashboard/admin/samples",
+        icon: <SyncIcon fontSize="small" />,
+      },
       {
         title: "Edit blogs",
         path: "/dashboard/edit-blogs",
