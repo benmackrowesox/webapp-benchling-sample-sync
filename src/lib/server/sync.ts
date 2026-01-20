@@ -368,7 +368,7 @@ export async function processSyncQueue(): Promise<{
       item.attempts++;
       item.status = "processing";
       item.lastAttempt = new Date().toISOString();
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
       
       if (item.direction === "to-benchling") {
         await processToBenchling(item);
@@ -378,7 +378,7 @@ export async function processSyncQueue(): Promise<{
       
       item.status = "completed";
       item.completedAt = new Date().toISOString();
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
       processed++;
     } catch (error: any) {
       item.attempts++;
@@ -392,7 +392,7 @@ export async function processSyncQueue(): Promise<{
         item.status = "pending";
       }
       
-      await itemDoc.ref.update(item);
+      await itemDoc.ref.update(item as unknown as Record<string, unknown>);
     }
   }
   
