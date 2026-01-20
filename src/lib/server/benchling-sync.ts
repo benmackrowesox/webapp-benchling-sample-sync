@@ -328,6 +328,7 @@ export interface BulkTaskResult {
 
 /**
  * Helper to build Benchling fields object from local sample data
+ * Uses the actual Benchling field IDs from EBM_SAMPLE_CONFIG
  */
 export function buildBenchlingFields(sample: {
   sampleId: string;
@@ -338,17 +339,17 @@ export function buildBenchlingFields(sample: {
   sampleStatus: string;
 }): Record<string, any> {
   return {
-    "Sample ID": { value: sample.sampleId },
-    "Client Name": { value: sample.clientName },
-    "Sample Type": { value: sample.sampleType },
-    "Sample Format": { value: sample.sampleFormat || "" },
-    "Sample Date": { value: sample.sampleDate },
-    "Sample Status": { value: sample.sampleStatus },
+    [EBM_SAMPLE_CONFIG.fieldMapping.clientName.benchlingFieldId]: { value: sample.clientName },
+    [EBM_SAMPLE_CONFIG.fieldMapping.sampleType.benchlingFieldId]: { value: sample.sampleType },
+    [EBM_SAMPLE_CONFIG.fieldMapping.sampleFormat.benchlingFieldId]: { value: sample.sampleFormat || "" },
+    [EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId]: { value: sample.sampleDate },
+    [EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId]: { value: sample.sampleStatus },
   };
 }
 
 /**
  * Helper to parse Benchling fields into local format
+ * Uses the actual Benchling field IDs from EBM_SAMPLE_CONFIG
  */
 export function parseBenchlingFields(fields: Record<string, any>): {
   sampleId: string;
@@ -359,12 +360,12 @@ export function parseBenchlingFields(fields: Record<string, any>): {
   sampleStatus: string;
 } {
   return {
-    sampleId: extractFieldValue(fields, "Sample ID"),
-    clientName: extractFieldValue(fields, "Client Name"),
-    sampleType: extractFieldValue(fields, "Sample Type"),
-    sampleFormat: extractFieldValue(fields, "Sample Format"),
-    sampleDate: extractFieldValue(fields, "Sample Date"),
-    sampleStatus: extractFieldValue(fields, "Sample Status"),
+    sampleId: "", // Sample ID comes from entityRegistryId, not a custom field
+    clientName: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.clientName.benchlingFieldId),
+    sampleType: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleType.benchlingFieldId),
+    sampleFormat: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleFormat.benchlingFieldId),
+    sampleDate: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId),
+    sampleStatus: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId),
   };
 }
 

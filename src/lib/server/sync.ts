@@ -553,13 +553,20 @@ export async function importFromBenchling(): Promise<{
       try {
         const parsed = parseBenchlingFields(benchlingSample.fields);
         const entityRegistryId = benchlingSample.entityRegistryId;
+        // Extract sampleId from entityRegistryId (e.g., "EBM123" → "123")
+        const sampleId = entityRegistryId.replace(EBM_SAMPLE_CONFIG.idPrefix, '');
         
         // Check if already exists
         const existing = await getSampleByRegistryId(entityRegistryId);
         if (existing) {
           // Update existing
           await db.doc(`${SAMPLES_COLLECTION}/${existing.id}`).update({
-            ...parsed,
+            sampleId,
+            clientName: parsed.clientName,
+            sampleType: parsed.sampleType,
+            sampleFormat: parsed.sampleFormat,
+            sampleDate: parsed.sampleDate,
+            sampleStatus: parsed.sampleStatus,
             benchlingId: benchlingSample.id,
             lastModified: benchlingSample.modifiedAt,
             lastSyncedFromBenchling: new Date().toISOString(),
@@ -570,7 +577,7 @@ export async function importFromBenchling(): Promise<{
             id: uuidv4(),
             benchlingId: benchlingSample.id,
             entityRegistryId: entityRegistryId,
-            sampleId: parsed.sampleId,
+            sampleId: sampleId,
             clientName: parsed.clientName,
             sampleType: parsed.sampleType,
             sampleFormat: parsed.sampleFormat,
@@ -606,7 +613,7 @@ export async function importFromBenchling(): Promise<{
     
     await updateSyncMetadata({
       importInProgress: false,
-      importCompleted: new Date().toISOString(),
+      lastImportCompleted: new Date().toISOString(),
       importProgress: {
         total: benchlingSamples.length,
         processed: benchlingSamples.length,
