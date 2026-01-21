@@ -126,10 +126,16 @@ This error indicates an authentication/permission issue. Check:
    - Verify the API key exists and has not expired
    - Create a new API key if needed
 
-2. **API Key Permissions**
+2. **API Key Permissions** (IMPORTANT!)
    - The API key needs "Read" permission for custom entities
-   - Go to https://esox.benchling.com/settings/api and check key permissions
-   - Ensure the key has access to the custom entities schema (`ts_NJDS3UwU`)
+   - Go to https://esox.benchling.com/settings/api
+   - Look at the permissions column for your API key
+   - Must have `custom_entities:read` or `custom-entities:read` permission
+   - If missing:
+     - Click on the API key to edit
+     - Under "Permissions", add `custom_entities.read`
+     - Or select "Read" access for Custom Entities
+     - Save and copy the new key to Vercel
 
 3. **Correct API Key in Vercel**
    - In Vercel dashboard, go to Settings → Environment Variables
@@ -137,17 +143,17 @@ This error indicates an authentication/permission issue. Check:
    - Make sure there are no extra spaces or newline characters
 
 4. **API URL Configuration**
-   - Verify `NEXT_PRIVATE_BENCHLING_API_URL` is set to `https://api.benchling.com`
-   - Using tenant subdomain (e.g., `https://esox.benchling.com`) will cause 404 errors
+   - Verify `NEXT_PRIVATE_BENCHLING_API_URL` is set correctly
+   - For your tenant: `https://esox.benchling.com` (or `https://api.benchling.com`)
 
 5. **Test API Connectivity**
    You can test the API key manually using curl:
    ```bash
    # Replace with your actual API key
-   API_KEY="sk_ra72wcKIFRSZHZMSG aG5VDnFFnM5a"
+   API_KEY="sk_your_api_key_here"
    
-   # Test API connectivity (should return user info)
-   curl -u "$API_KEY:" https://api.benchling.com/users/me
+   # Test API connectivity (should return user info if key is valid)
+   curl -u "$API_KEY:" https://esox.benchling.com/api/v2/users/me
    ```
 
 ### Import failing?
