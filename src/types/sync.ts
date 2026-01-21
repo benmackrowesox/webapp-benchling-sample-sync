@@ -154,32 +154,32 @@ export const EBM_SAMPLE_CONFIG = {
   idPrefix: process.env.NEXT_PRIVATE_BENCHLING_ID_PREFIX || 'EBM',
   fieldMapping: {
     sampleId: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_ENTITY_REGISTRY_ID || 'entityRegistryId', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_ENTITY_REGISTRY_ID || 'entity_registry_id', 
       localField: 'sampleId', 
       isRequired: true 
     },
     clientName: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_CLIENT_NAME || 'tsf_1ItF8QUi', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_CLIENT_NAME || 'client_name', 
       localField: 'clientName', 
       isRequired: true 
     },
     sampleType: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_TYPE || 'tsf_E1ktWT2b', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_TYPE || 'sample_type', 
       localField: 'sampleType', 
       isRequired: true 
     },
     sampleFormat: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_FORMAT || 'tsf_stZCS21smu', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_FORMAT || 'sample_format', 
       localField: 'sampleFormat', 
       isRequired: false 
     },
     sampleDate: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_DATE || 'tsf_MKDjGziQ', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_DATE || 'sample_date', 
       localField: 'sampleDate', 
       isRequired: true 
     },
     sampleStatus: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_STATUS || 'tsf_PcrOui0bQJ', 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_STATUS || 'sample_status', 
       localField: 'sampleStatus', 
       isRequired: true 
     },
