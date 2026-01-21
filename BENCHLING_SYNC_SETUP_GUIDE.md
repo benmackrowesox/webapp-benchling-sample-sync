@@ -129,13 +129,26 @@ This error indicates an authentication/permission issue. Check:
 2. **API Key Permissions** (IMPORTANT!)
    - The API key needs "Read" permission for custom entities
    - Go to https://esox.benchling.com/settings/api
-   - Look at the permissions column for your API key
+   - **To check permissions:**
+     - Click on the API key name/id to expand/details
+     - Or click the "edit" or "manage" icon next to the key
+     - Look for sections labeled "Permissions", "Scopes", or "Access"
    - Must have `custom_entities:read` or `custom-entities:read` permission
-   - If missing:
+   - **If you don't see permissions column:**
+     - Click the API key to open its details
+     - Look for checkboxes or dropdowns for different entity types
+     - Ensure "Custom Entities" or "Custom Entities" has "Read" checked
+     - Or look for "Schema Access" section and ensure your schema (`ts_NJDS3UwU`) is listed
+   - **If permissions are missing:**
      - Click on the API key to edit
-     - Under "Permissions", add `custom_entities.read`
+     - Under "Permissions" or "Scopes", add `custom_entities.read`
      - Or select "Read" access for Custom Entities
      - Save and copy the new key to Vercel
+   - **Alternative: Create new key with correct permissions:**
+     - Click "Create API Key" button
+     - Name it (e.g., "Webapp Sync Read Only")
+     - Under permissions, explicitly select Custom Entities → Read
+     - Copy and use the new key
 
 3. **Correct API Key in Vercel**
    - In Vercel dashboard, go to Settings → Environment Variables
