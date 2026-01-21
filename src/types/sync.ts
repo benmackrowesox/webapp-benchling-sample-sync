@@ -153,11 +153,8 @@ export const EBM_SAMPLE_CONFIG = {
   registryId: process.env.NEXT_PRIVATE_BENCHLING_REGISTRY_ID || 'src_xro8e9rf',
   idPrefix: process.env.NEXT_PRIVATE_BENCHLING_ID_PREFIX || 'EBM',
   fieldMapping: {
-    sampleId: { 
-      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_ENTITY_REGISTRY_ID || 'entity_registry_id', 
-      localField: 'sampleId', 
-      isRequired: true 
-    },
+    // Note: sampleId is derived from entityRegistryId (e.g., "EBM123" -> "123")
+    // and is NOT stored as a custom field in Benchling
     clientName: { 
       benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_CLIENT_NAME || 'client_name', 
       localField: 'clientName', 

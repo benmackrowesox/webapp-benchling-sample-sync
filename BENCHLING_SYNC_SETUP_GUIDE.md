@@ -18,16 +18,20 @@ The following Benchling IDs have been configured in `src/types/sync.ts`:
 
 ## Step 1: Environment Variables
 
-Add the following to your `.env.local` file:
+Add the following to your `.env.local` file and Vercel environment variables:
 
 ```bash
-# Benchling API Configuration
+# Benchling API Configuration - IMPORTANT: Use api.benchling.com NOT tenant subdomain!
 NEXT_PRIVATE_BENCHLING_API_URL=https://api.benchling.com
 NEXT_PRIVATE_BENCHLING_API_KEY=your_benchling_api_key_here
 
 # Webhook Secret (generate a random string for security)
 BENCHLING_WEBHOOK_SECRET=your_random_secret_string
 ```
+
+**⚠️ Important API URL Note:**
+- Use `https://api.benchling.com` - NOT `https://esox.benchling.com` or any other tenant subdomain
+- The code will automatically detect and warn if a tenant subdomain is used, but it's best to configure the correct URL from the start
 
 **To get your Benchling API Key:**
 1. Go to https://esox.benchling.com/settings/api
@@ -113,6 +117,38 @@ On the admin samples page:
 - Verify the webhook URL is publicly accessible (not localhost)
 - Check Benchling webhook logs for delivery attempts
 - Ensure webhook secret matches in both places
+
+### Import failing with 404 "Try signing in" error?
+This error indicates an authentication/permission issue. Check:
+
+1. **API Key Validity**
+   - Go to https://esox.benchling.com/settings/api
+   - Verify the API key exists and has not expired
+   - Create a new API key if needed
+
+2. **API Key Permissions**
+   - The API key needs "Read" permission for custom entities
+   - Go to https://esox.benchling.com/settings/api and check key permissions
+   - Ensure the key has access to the custom entities schema (`ts_NJDS3UwU`)
+
+3. **Correct API Key in Vercel**
+   - In Vercel dashboard, go to Settings → Environment Variables
+   - Verify `NEXT_PRIVATE_BENCHLING_API_KEY` is set correctly
+   - Make sure there are no extra spaces or newline characters
+
+4. **API URL Configuration**
+   - Verify `NEXT_PRIVATE_BENCHLING_API_URL` is set to `https://api.benchling.com`
+   - Using tenant subdomain (e.g., `https://esox.benchling.com`) will cause 404 errors
+
+5. **Test API Connectivity**
+   You can test the API key manually using curl:
+   ```bash
+   # Replace with your actual API key
+   API_KEY="sk_ra72wcKIFRSZHZMSG aG5VDnFFnM5a"
+   
+   # Test API connectivity (should return user info)
+   curl -u "$API_KEY:" https://api.benchling.com/users/me
+   ```
 
 ### Import failing?
 - Check browser console for error messages

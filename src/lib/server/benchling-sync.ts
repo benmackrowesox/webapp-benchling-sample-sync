@@ -86,8 +86,39 @@ export async function fetchAllMetagenomicsSamples(
         message: error.message,
         response: error.response?.data,
         status: error.response?.status,
+        url: url,
+        params: params,
       });
-      throw error;
+      
+      // Provide specific guidance based on error type
+      if (error.response?.status === 404) {
+        const userMessage = error.response?.data?.userMessage || "";
+        if (userMessage.includes("signing in") || userMessage.includes("Resource not found")) {
+          console.error("[Benchling Sync] AUTHENTICATION ISSUE DETECTED:");
+          console.error("- The API request returned 404 with 'signing in' message");
+          console.error("- This typically means the API key is invalid, expired, or lacks permissions");
+          console.error("- Please check:");
+          console.error("  1. NEXT_PRIVATE_BENCHLING_API_KEY is set correctly in Vercel");
+          console.error("  2. The API key has not expired");
+          console.error("  3. The API key has 'Read' permissions for custom entities");
+          console.error("  4. The API key belongs to the correct Benchling tenant");
+        } else {
+          console.error("[Benchling Sync] RESOURCE NOT FOUND:");
+          console.error("- The schemaId or registryId may be incorrect");
+          console.error("- Schema ID:", EBM_SAMPLE_CONFIG.schemaId);
+          console.error("- Registry ID:", EBM_SAMPLE_CONFIG.registryId);
+        }
+      }
+      
+      // Create a more informative error
+      const helpfulError = new Error(
+        `Benchling API Error (${error.response?.status || 'unknown'}): ${error.response?.data?.userMessage || error.message}`
+      );
+      (helpfulError as any).originalError = error;
+      (helpfulError as any).isAuthError = error.response?.status === 404 && 
+        error.response?.data?.userMessage?.includes("signing in");
+      
+      throw helpfulError;
     }
   } while (nextCursor);
   
@@ -375,6 +406,7 @@ export function buildBenchlingFields(sample: {
 /**
  * Helper to parse Benchling fields into local format
  * Uses the actual Benchling field IDs from EBM_SAMPLE_CONFIG
+ * Note: sampleId is extracted from entityRegistryId (not a custom field)
  */
 export function parseBenchlingFields(fields: Record<string, any>): {
   sampleId: string;
@@ -393,6 +425,7 @@ export function parseBenchlingFields(fields: Record<string, any>): {
       sampleDate: EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId,
       sampleStatus: EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId,
     },
+    note: "sampleId is derived from entityRegistryId, not a custom field",
   });
   
   const rawStatus = extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId);

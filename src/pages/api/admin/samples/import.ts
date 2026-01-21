@@ -90,8 +90,17 @@ export default async function handler(
       errorMessage = "Access denied. Please check your Benchling API permissions.";
       errorCode = "PERMISSION_ERROR";
     } else if (error.response?.status === 404) {
-      errorMessage = "Benchling schema or registry not found. Please check your schema and registry IDs.";
-      errorCode = "NOT_FOUND_ERROR";
+      const userMessage = error.response?.data?.userMessage || "";
+      if (userMessage.includes("signing in") || userMessage.includes("Resource not found")) {
+        errorMessage = "Authentication failed or API key invalid. Please verify your Benchling API key is correct and has proper permissions.";
+        errorCode = "AUTH_ERROR";
+      } else {
+        errorMessage = "Benchling schema or registry not found. Please check your schema and registry IDs.";
+        errorCode = "NOT_FOUND_ERROR";
+      }
+    } else if (error.isAuthError) {
+      errorMessage = "Authentication failed. Please check your Benchling API key is valid and has not expired.";
+      errorCode = "AUTH_ERROR";
     }
     
     res.status(500).json({ 
