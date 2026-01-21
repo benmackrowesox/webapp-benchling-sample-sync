@@ -147,19 +147,44 @@ export interface SampleFieldMapping {
 }
 
 // Configuration for EBM metagenomics samples
+// These values should be configured via environment variables in Vercel
 export const EBM_SAMPLE_CONFIG = {
-  schemaId: 'ts_NJDS3UwU',       // Metagenomics schema ID from Benchling
-  registryId: 'src_xro8e9rf',    // Registry ID
-  idPrefix: 'EBM',               // Sample ID prefix
+  schemaId: process.env.NEXT_PRIVATE_BENCHLING_SCHEMA_ID || 'ts_NJDS3UwU',
+  registryId: process.env.NEXT_PRIVATE_BENCHLING_REGISTRY_ID || 'src_xro8e9rf',
+  idPrefix: process.env.NEXT_PRIVATE_BENCHLING_ID_PREFIX || 'EBM',
   fieldMapping: {
-    sampleId: { benchlingFieldId: 'entityRegistryId', localField: 'sampleId', isRequired: true }, // entityRegistryId is the registry ID field
-    clientName: { benchlingFieldId: 'tsf_1ItF8QUi', localField: 'clientName', isRequired: true },
-    sampleType: { benchlingFieldId: 'tsf_E1ktWT2b', localField: 'sampleType', isRequired: true },
-    sampleFormat: { benchlingFieldId: 'tsf_stZCS21smu', localField: 'sampleFormat', isRequired: false },
-    sampleDate: { benchlingFieldId: 'tsf_MKDjGziQ', localField: 'sampleDate', isRequired: true },
-    sampleStatus: { benchlingFieldId: 'tsf_PcrOui0bQJ', localField: 'sampleStatus', isRequired: true },
+    sampleId: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_ENTITY_REGISTRY_ID || 'entityRegistryId', 
+      localField: 'sampleId', 
+      isRequired: true 
+    },
+    clientName: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_CLIENT_NAME || 'tsf_1ItF8QUi', 
+      localField: 'clientName', 
+      isRequired: true 
+    },
+    sampleType: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_TYPE || 'tsf_E1ktWT2b', 
+      localField: 'sampleType', 
+      isRequired: true 
+    },
+    sampleFormat: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_FORMAT || 'tsf_stZCS21smu', 
+      localField: 'sampleFormat', 
+      isRequired: false 
+    },
+    sampleDate: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_DATE || 'tsf_MKDjGziQ', 
+      localField: 'sampleDate', 
+      isRequired: true 
+    },
+    sampleStatus: { 
+      benchlingFieldId: process.env.NEXT_PRIVATE_BENCHLING_FIELD_SAMPLE_STATUS || 'tsf_PcrOui0bQJ', 
+      localField: 'sampleStatus', 
+      isRequired: true 
+    },
   } as Record<string, SampleFieldMapping>,
-  syncIntervalMinutes: 10,
-  maxRetries: 3,
+  syncIntervalMinutes: parseInt(process.env.NEXT_PRIVATE_BENCHLING_SYNC_INTERVAL_MINUTES || '10', 10),
+  maxRetries: parseInt(process.env.NEXT_PRIVATE_BENCHLING_MAX_RETRIES || '3', 10),
 };
 
