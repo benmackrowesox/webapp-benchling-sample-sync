@@ -33,6 +33,16 @@ export async function fetchAllMetagenomicsSamples(
   const samples: BenchlingSample[] = [];
   let nextCursor: string | undefined;
   
+  console.log("[Benchling Sync] Starting import with config:", {
+    schemaId: EBM_SAMPLE_CONFIG.schemaId,
+    registryId: EBM_SAMPLE_CONFIG.registryId,
+    idPrefix: EBM_SAMPLE_CONFIG.idPrefix,
+    fieldMapping: Object.entries(EBM_SAMPLE_CONFIG.fieldMapping).map(([key, val]) => ({
+      key,
+      benchlingFieldId: val.benchlingFieldId,
+    })),
+  });
+  
   do {
     const url = `${API_URL}/custom-entities`;
     const params: Record<string, any> = {
@@ -45,6 +55,8 @@ export async function fetchAllMetagenomicsSamples(
       params.cursor = nextCursor;
     }
     
+    console.log(`[Benchling Sync] Fetching samples (cursor: ${nextCursor || 'none'})`);
+    
     try {
       const response = await axios.get(url, {
         headers: authHeader,
@@ -52,21 +64,34 @@ export async function fetchAllMetagenomicsSamples(
       });
       
       const data = response.data;
+      console.log(`[Benchling Sync] Response: ${data.customEntities?.length || 0} entities returned`);
+      
+      // Log first entity fields structure for debugging
+      if (data.customEntities?.length > 0 && samples.length === 0) {
+        console.log("[Benchling Sync] First entity fields structure:", JSON.stringify(data.customEntities[0].fields, null, 2));
+      }
       
       // Filter for EBM prefixed samples
       const ebmSamples = (data.customEntities || []).filter(
         (entity: any) => entity.entityRegistryId?.startsWith(EBM_SAMPLE_CONFIG.idPrefix)
       );
       
+      console.log(`[Benchling Sync] Found ${ebmSamples.length} EBM samples matching prefix "${EBM_SAMPLE_CONFIG.idPrefix}"`);
+      
       samples.push(...ebmSamples);
       
       nextCursor = data.nextCursor;
-    } catch (error) {
-      console.error("Error fetching metagenomics samples:", error);
+    } catch (error: any) {
+      console.error("[Benchling Sync] Error fetching metagenomics samples:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       throw error;
     }
   } while (nextCursor);
   
+  console.log(`[Benchling Sync] Import complete. Total samples found: ${samples.length}`);
   return samples;
 }
 
@@ -359,13 +384,24 @@ export function parseBenchlingFields(fields: Record<string, any>): {
   sampleDate: string;
   sampleStatus: SampleStatus;
 } {
+  console.log("[Benchling Sync] Parsing fields with mapping:", {
+    fields: Object.keys(fields),
+    mapping: {
+      clientName: EBM_SAMPLE_CONFIG.fieldMapping.clientName.benchlingFieldId,
+      sampleType: EBM_SAMPLE_CONFIG.fieldMapping.sampleType.benchlingFieldId,
+      sampleFormat: EBM_SAMPLE_CONFIG.fieldMapping.sampleFormat.benchlingFieldId,
+      sampleDate: EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId,
+      sampleStatus: EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId,
+    },
+  });
+  
   const rawStatus = extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleStatus.benchlingFieldId);
   
   // Validate and cast to SampleStatus type
   const validStatuses: SampleStatus[] = ['pending', 'collected', 'received', 'processing', 'completed', 'archived', 'error'];
   const sampleStatus: SampleStatus = validStatuses.includes(rawStatus as SampleStatus) ? rawStatus as SampleStatus : 'pending';
   
-  return {
+  const result = {
     sampleId: "", // Sample ID comes from entityRegistryId, not a custom field
     clientName: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.clientName.benchlingFieldId),
     sampleType: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleType.benchlingFieldId),
@@ -373,6 +409,10 @@ export function parseBenchlingFields(fields: Record<string, any>): {
     sampleDate: extractFieldValue(fields, EBM_SAMPLE_CONFIG.fieldMapping.sampleDate.benchlingFieldId),
     sampleStatus,
   };
+  
+  console.log("[Benchling Sync] Parsed result:", result);
+  
+  return result;
 }
 
 function extractFieldValue(fields: Record<string, any>, fieldName: string): string {
