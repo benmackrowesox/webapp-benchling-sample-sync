@@ -21,7 +21,7 @@ const authHeader = {
   Accept: "application/json",
 };
 
-const API_URL = benchlingConfig.apiUrl;
+const API_URL = `${benchlingConfig.apiUrl}/api/v2`;
 
 /**
  * Fetch all metagenomics samples from Benchling (for initial import)
