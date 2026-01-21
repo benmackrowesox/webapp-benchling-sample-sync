@@ -72,9 +72,32 @@ export default async function handler(
     });
   } catch (error: any) {
     console.error("Error during import:", error);
+    
+    // Provide more helpful error messages
+    let errorMessage = error.message;
+    let errorCode = "UNKNOWN_ERROR";
+    
+    if (error.message?.includes("ENOTFOUND") || error.message?.includes("getaddrinfo")) {
+      errorMessage = "Cannot connect to Benchling API. Please check your API URL configuration.";
+      errorCode = "DNS_ERROR";
+    } else if (error.message?.includes("ENOTFOUND")) {
+      errorMessage = "Cannot resolve Benchling API domain. Please verify NEXT_PRIVATE_BENCHLING_API_URL is correct.";
+      errorCode = "DNS_ERROR";
+    } else if (error.response?.status === 401) {
+      errorMessage = "Authentication failed. Please check your Benchling API key.";
+      errorCode = "AUTH_ERROR";
+    } else if (error.response?.status === 403) {
+      errorMessage = "Access denied. Please check your Benchling API permissions.";
+      errorCode = "PERMISSION_ERROR";
+    } else if (error.response?.status === 404) {
+      errorMessage = "Benchling schema or registry not found. Please check your schema and registry IDs.";
+      errorCode = "NOT_FOUND_ERROR";
+    }
+    
     res.status(500).json({ 
       error: "Import failed",
-      message: error.message,
+      message: errorMessage,
+      code: errorCode,
     });
   }
 }

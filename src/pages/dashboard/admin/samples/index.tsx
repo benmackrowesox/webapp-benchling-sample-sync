@@ -386,7 +386,17 @@ const AdminSamples: NextPage = () => {
       await fetchSamples();
       await fetchStatus();
     } catch (err: any) {
-      setSnackbar({ open: true, message: err.message || "Import failed", severity: "error" });
+      console.error("Import error:", err);
+      const errorMessage = err.message || "Import failed";
+      const errorCode = err.code || "";
+      
+      // Show more helpful message for DNS errors
+      let displayMessage = errorMessage;
+      if (errorCode === "DNS_ERROR") {
+        displayMessage = `${errorMessage}\n\nCheck that NEXT_PRIVATE_BENCHLING_API_URL is set correctly in Vercel environment variables.`;
+      }
+      
+      setSnackbar({ open: true, message: displayMessage, severity: "error" });
     } finally {
       setImporting(false);
     }
