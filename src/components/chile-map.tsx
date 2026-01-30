@@ -103,21 +103,18 @@ export default function ChileMap({ height = 600 }: ChileMapProps) {
     return COLORS[index % COLORS.length];
   };
 
-  // Get status color
+  // Get status color (using English status values)
   const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
-      case 'vigente':
+      case 'active':
         return '#2ca02c'; // green for active
-      case 'en trámite':
-      case 'en tramite':
+      case 'pending':
         return '#ff7f0e'; // orange for pending
-      case 'caduco':
-      case 'caducado':
+      case 'expired':
         return '#d62728'; // red for expired
-      case 'renovación':
-      case 'renovacion':
+      case 'renewal':
         return '#9467bd'; // purple for renewal
-      case 'suspendido':
+      case 'suspended':
         return '#8c564b'; // brown for suspended
       default:
         return '#7f7f7f'; // gray for unknown

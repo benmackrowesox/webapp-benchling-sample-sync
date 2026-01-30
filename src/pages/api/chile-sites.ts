@@ -68,6 +68,129 @@ const CHILE_SPECIES_TRANSLATIONS: Record<string, string> = {
   "TUNA": "Tuna",
 };
 
+// Chile region translation dictionary (Spanish to English)
+const CHILE_REGION_TRANSLATIONS: Record<string, string> = {
+  "REGIÓN DE ARICA Y PARINACOTA": "Arica and Parinacota",
+  "REGIÓN DE TARAPACÁ": "Tarapacá",
+  "REGIÓN DE ANTOFAGASTA": "Antofagasta",
+  "REGIÓN DE ATACAMA": "Atacama",
+  "REGIÓN DE COQUIMBO": "Coquimbo",
+  "REGIÓN DE VALPARAÍSO": "Valparaíso",
+  "REGIÓN DEL LIBERTADOR BERNARDO O'HIGGINS": "O'Higgins",
+  "REGIÓN DEL MAULE": "Maule",
+  "REGIÓN DE ÑUBLE": "Ñuble",
+  "REGIÓN DEL BIOBÍO": "Bío Bío",
+  "REGIÓN DE LA ARAUCANÍA": "Araucanía",
+  "REGIÓN DE LOS RÍOS": "Los Ríos",
+  "REGIÓN DE LOS LAGOS": "Los Lagos",
+  "REGIÓN DE AISÉN DEL GENERAL CARLOS IBÁÑEZ DEL CAMPO": "Aysén",
+  "REGIÓN DE MAGALLANES Y DE LA ANTÁRTICA CHILENA": "Magallanes",
+};
+
+// Chile concession type translation dictionary
+const CHILE_CONCESSION_TYPE_TRANSLATIONS: Record<string, string> = {
+  "ACUÍCOLA": "Aquaculture",
+  "ACUICOLA": "Aquaculture",
+  "PESQUERA": "Fishing",
+  "PESCA": "Fishing",
+};
+
+// Chile species type translation dictionary
+const CHILE_SPECIES_TYPE_TRANSLATIONS: Record<string, string> = {
+  "PECES": "Fish",
+  "PEZ": "Fish",
+  "MOLUSCOS": "Shellfish",
+  "MOLUSCO": "Shellfish",
+  "CRUSTÁCEOS": "Crustaceans",
+  "CRUSTACEOS": "Crustaceans",
+  "ALGAS": "Seaweed",
+  "ALGA": "Seaweed",
+};
+
+// Chile status translation dictionary (Spanish to English)
+const CHILE_STATUS_TRANSLATIONS: Record<string, string> = {
+  "VIGENTE": "Active",
+  "EN TRÁMITE": "Pending",
+  "EN TRAMITE": "Pending",
+  "CADUCO": "Expired",
+  "CADUCADO": "Expired",
+  "RENOVACIÓN": "Renewal",
+  "RENOVACION": "Renewal",
+  "SUSPENDIDO": "Suspended",
+  "SUSPENSIÓN": "Suspended",
+};
+
+/**
+ * Translate a Chile region name to English
+ */
+function translateChileRegion(region: string): string {
+  if (!region) return region;
+  
+  const upper = region.toUpperCase().trim();
+  
+  // Direct translation
+  if (CHILE_REGION_TRANSLATIONS[upper]) {
+    return CHILE_REGION_TRANSLATIONS[upper];
+  }
+  
+  // Try partial matching
+  for (const [spanish, english] of Object.entries(CHILE_REGION_TRANSLATIONS)) {
+    if (upper.includes(spanish) || spanish.includes(upper)) {
+      return english;
+    }
+  }
+  
+  return region;
+}
+
+/**
+ * Translate a Chile concession type to English
+ */
+function translateChileConcessionType(concessionType: string): string {
+  if (!concessionType) return concessionType;
+  
+  const upper = concessionType.toUpperCase().trim();
+  
+  // Direct translation
+  if (CHILE_CONCESSION_TYPE_TRANSLATIONS[upper]) {
+    return CHILE_CONCESSION_TYPE_TRANSLATIONS[upper];
+  }
+  
+  return concessionType;
+}
+
+/**
+ * Translate a Chile species type to English
+ */
+function translateChileSpeciesType(speciesType: string): string {
+  if (!speciesType) return speciesType;
+  
+  const upper = speciesType.toUpperCase().trim();
+  
+  // Direct translation
+  if (CHILE_SPECIES_TYPE_TRANSLATIONS[upper]) {
+    return CHILE_SPECIES_TYPE_TRANSLATIONS[upper];
+  }
+  
+  return speciesType;
+}
+
+/**
+ * Translate Chile status to English
+ */
+function translateChileStatus(status: string): string {
+  if (!status) return "Unknown";
+  
+  const normalized = status.toUpperCase().trim();
+  
+  // Direct translation
+  if (CHILE_STATUS_TRANSLATIONS[normalized]) {
+    return CHILE_STATUS_TRANSLATIONS[normalized];
+  }
+  
+  return status;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ChileMapData | { error: string }>) {
   if (req.method !== "GET") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -113,21 +236,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
 /**
  * Process raw Chile site data from Excel (Spanish column names)
+ * All fields are translated to English
  */
 function processChileData(rawData: any[]): ChileSite[] {
   return rawData.map((row, index) => {
     // Extract coordinates - may have multiple sets, take first valid one
     const coords = parseDMSCoordinates(row["Coordenadas Geográficas"] || row["Coordenadas"] || "");
     
-    // Extract individual species from the "Especies" column
+    // Extract individual species from the "Especies" column and translate to English
     const speciesArray = extractChileSpecies(row["Especies"] || "");
     
-    // Map Spanish status to our normalized format
+    // Get raw status and translate to English
     const rawStatus = row["Estado"] || row["Estado de Trámite"] || "";
-    const normalizedStatus = normalizeChileStatus(rawStatus);
-    
-    // Build status description
-    const statusDescription = row["Estado de Trámite"] || rawStatus;
+    const translatedStatus = translateChileStatus(rawStatus);
     
     const site: ChileSite = {
       id: String(row["OBJECTID"] || row["N° Pert"] || index),
@@ -135,18 +256,23 @@ function processChileData(rawData: any[]): ChileSite[] {
       concession_number: String(row["N° Pert"] || ""),
       site_name: row["Ubicación Geográfica"]?.trim() || row["NOMBRE SITIO"] || "",
       location: row["Ubicación Geográfica"]?.trim() || "",
+      // Commune is kept as-is (typically proper names)
       commune: (row["Comuna"] || "").trim(),
-      region: row["Región"] || row["REGIÓN"] || "",
+      // Translate region to English
+      region: translateChileRegion(row["Región"] || row["REGIÓN"] || ""),
       latitude: coords.lat,
       longitude: coords.lon,
       company: (row["Nombre de Titular"] || row["TITULAR"] || "").trim(),
       holder: (row["Nombre de Titular"] || row["TITULAR"] || "").trim(),
       operator: "",
       species: speciesArray,
-      species_type: (row["Grupo Especie"] || "").trim(),
-      concession_type: (row["Tipo Concesión"] || row["TIPO CONCESIÓN"] || "").trim(),
-      status: normalizedStatus,
-      status_description: statusDescription,
+      // Translate species type to English
+      species_type: translateChileSpeciesType((row["Grupo Especie"] || "").trim()),
+      // Translate concession type to English
+      concession_type: translateChileConcessionType((row["Tipo Concesión"] || row["TIPO CONCESIÓN"] || "").trim()),
+      status: translatedStatus,
+      // Status description in English
+      status_description: translatedStatus,
       activity_type: "",
       business_type: "",
       registration_date: "",
@@ -269,44 +395,7 @@ function parseNumber(value: string | number | undefined): number | undefined {
 }
 
 /**
- * Normalize Chile status values to consistent format
- */
-function normalizeChileStatus(status: string): string {
-  if (!status) return "Unknown";
-  
-  const normalized = status.toLowerCase().trim();
-  
-  // Concesion otorgada / vigente - active
-  if (normalized.includes("otorgada") || normalized.includes("vigente") || normalized.includes("aprobado")) {
-    return "Vigente";
-  }
-  
-  // Tramite / solicitud / espera - pending
-  if (normalized.includes("tramite") || normalized.includes("solicitud") || normalized.includes("espera") || normalized.includes("proyecto")) {
-    return "En Trámite";
-  }
-  
-  // Caduco / vencido - expired
-  if (normalized.includes("caduco") || normalized.includes("vencido") || normalized.includes("cancelada")) {
-    return "Caduco";
-  }
-  
-  // Renovation
-  if (normalized.includes("renovaci") || normalized.includes("renovacion")) {
-    return "Renovación";
-  }
-  
-  // Suspended
-  if (normalized.includes("suspendido") || normalized.includes("suspensi")) {
-    return "Suspendido";
-  }
-  
-  // Return original if no match
-  return status;
-}
-
-/**
- * Build hover text for a Chile site
+ * Build hover text for a Chile site (all labels in English)
  */
 function buildChileHoverText(site: ChileSite): string {
   const parts: string[] = [];
@@ -320,7 +409,7 @@ function buildChileHoverText(site: ChileSite): string {
   
   // Concession number
   if (site.concession_number) {
-    parts.push(`Concesión N°: ${site.concession_number}`);
+    parts.push(`Concession No.: ${site.concession_number}`);
   }
   
   // Location
