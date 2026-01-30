@@ -21,8 +21,8 @@ The following Benchling IDs have been configured in `src/types/sync.ts`:
 Add the following to your `.env.local` file and Vercel environment variables:
 
 ```bash
-# Benchling API Configuration - IMPORTANT: Use api.benchling.com NOT tenant subdomain!
-NEXT_PRIVATE_BENCHLING_API_URL=https://api.benchling.com
+# Benchling API Configuration - IMPORTANT: Use YOUR TENANT-specific domain!
+NEXT_PRIVATE_BENCHLING_API_URL=https://esox.benchling.com/api/v2
 NEXT_PRIVATE_BENCHLING_API_KEY=your_benchling_api_key_here
 
 # Webhook Secret (generate a random string for security)
@@ -30,8 +30,10 @@ BENCHLING_WEBHOOK_SECRET=your_random_secret_string
 ```
 
 **⚠️ Important API URL Note:**
-- Use `https://api.benchling.com` - NOT `https://esox.benchling.com` or any other tenant subdomain
-- The code will automatically detect and warn if a tenant subdomain is used, but it's best to configure the correct URL from the start
+- Use your tenant-specific domain: `https://YOUR_TENANT.benchling.com/api/v2`
+- For example: `https://esox.benchling.com/api/v2`
+- Do NOT use the generic `https://api.benchling.com` URL
+- The `/api/v2` path is required for the v2 API
 
 **To get your Benchling API Key:**
 1. Go to https://esox.benchling.com/settings/api
@@ -157,12 +159,12 @@ This error indicates an authentication/permission issue. Check:
 
 4. **API URL Configuration**
    - Verify `NEXT_PRIVATE_BENCHLING_API_URL` is set correctly
-   - For your tenant: `https://esox.benchling.com` (or `https://api.benchling.com`)
+   - Must include `/api/v2` path: `https://esox.benchling.com/api/v2`
 
 5. **Test API Connectivity**
    You can test the API key manually using curl:
    ```bash
-   # Replace with your actual API key
+   # Replace with your actual API key and tenant
    API_KEY="sk_your_api_key_here"
    
    # Test API connectivity (should return user info if key is valid)

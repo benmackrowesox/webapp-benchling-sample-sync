@@ -13,6 +13,15 @@ import { v4 as uuidv4 } from "uuid";
 const apiKey = benchlingConfig.apiKey;
 const password = ""; // blank password; api key only
 
+// Validate that API key is set
+if (!apiKey) {
+  console.error("[Benchling Sync] ERROR: API key is not set!");
+  console.error("[Benchling Sync] Please set NEXT_PRIVATE_BENCHLING_API_KEY environment variable");
+} else {
+  // Log first few characters of API key for debugging (never log full key)
+  console.log("[Benchling Sync] API key configured:", apiKey.substring(0, 7) + "...");
+}
+
 const authHeader = {
   Authorization: `Basic ${Buffer.from(`${apiKey}:${password}`).toString(
     "base64",
@@ -21,7 +30,45 @@ const authHeader = {
   Accept: "application/json",
 };
 
-const API_URL = benchlingConfig.apiUrl;
+// Parse the base URL and ensure correct format for Benchling API v2
+// IMPORTANT: Use tenant-specific domain (e.g., https://esox.benchling.com)
+function getApiBaseUrl(baseUrl: string): string {
+  // Remove any trailing slashes
+  let url = baseUrl.replace(/\/$/, "");
+  
+  // If URL already includes /api/v2, return as-is
+  if (url.includes("/api/v2")) {
+    return url;
+  }
+  
+  // If URL is a tenant subdomain (e.g., esox.benchling.com), add /api/v2
+  if (url.includes(".benchling.com")) {
+    return `${url}/api/v2`;
+  }
+  
+  // If URL is just api.benchling.com, this is deprecated - should use tenant domain
+  if (url === "https://api.benchling.com" || url === "http://api.benchling.com") {
+    console.warn("[Benchling Sync] WARNING: Using generic api.benchling.com URL. " +
+      "Please update to use your tenant-specific domain (e.g., https://esox.benchling.com)");
+    return `${url}/api/v2`;
+  }
+  
+  // For any other URL (custom deployments, etc.), add /api/v2
+  return `${url}/api/v2`;
+}
+
+const API_URL = getApiBaseUrl(benchlingConfig.apiUrl);
+
+// Log the API URL for debugging
+console.log("[Benchling Sync] API Base URL:", benchlingConfig.apiUrl);
+console.log("[Benchling Sync] API Full URL:", API_URL);
+
+// Validate that we're using a tenant-specific domain
+if (benchlingConfig.apiUrl.includes("api.benchling.com") && 
+    !benchlingConfig.apiUrl.includes("/api/v2")) {
+  console.warn("[Benchling Sync] IMPORTANT: For tenant-specific access, " +
+    "use format: https://TENANT.benchling.com/api/v2");
+}
 
 /**
  * Fetch all metagenomics samples from Benchling (for initial import)

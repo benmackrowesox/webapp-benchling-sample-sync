@@ -11,24 +11,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 	}
 
 	try {
-		// On Vercel, files from public/ are copied to the root of the Lambda (/var/task)
-		// On local dev, they stay in public/ subfolder
-		const possiblePaths = [
-			path.join(process.cwd(), 'Norweigan_aquaculture_site_locations_030126.csv'), // Root of project
-			path.join(process.cwd(), '..', 'public', 'Norweigan_aquaculture_site_locations_030126.csv'), // Local dev alternative
-			path.join(process.cwd(), 'norwegian-sites.csv'), // Legacy fallback
-			path.join(process.cwd(), '..', 'public', 'norwegian-sites.csv'), // Legacy fallback
-		];
+		// Path to the Norway CSV file in the aquaculture site data folder
+		const csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'norway_aquaculture_sites', 'norwegian-sites-2.csv');
 		
-		let csvPath: string | null = null;
-		for (const p of possiblePaths) {
-			if (fs.existsSync(p)) {
-				csvPath = p;
-				break;
-			}
-		}
-		
-		if (!csvPath) {
+		// Check if file exists
+		if (!fs.existsSync(csvPath)) {
 			return res.status(404).json({ error: 'Norwegian data file not found' });
 		}
 

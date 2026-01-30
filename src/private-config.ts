@@ -1,7 +1,10 @@
 
 export const benchlingConfig = {
-  apiUrl: process.env.NEXT_PRIVATE_BENCHLING_API_URL || "https://api.benchling.com",
-  apiKey: process.env.NEXT_PRIVATE_BENCHLING_API_KEY || "demo-benchling-key",
+  // IMPORTANT: Use your tenant-specific domain with /api/v2 path
+  // For example: https://esox.benchling.com/api/v2
+  // Do NOT use the generic https://api.benchling.com URL
+  apiUrl: process.env.NEXT_PRIVATE_BENCHLING_API_URL || "https://esox.benchling.com/api/v2",
+  apiKey: process.env.NEXT_PRIVATE_BENCHLING_API_KEY || "",
 };
 
 

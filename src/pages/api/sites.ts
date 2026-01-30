@@ -40,25 +40,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
       case 'newfoundland':
       case 'novascotia':
       case 'quebec':
-        csvPath = path.join(process.cwd(), 'public', 'canadian_data', `${regionName}_aquaculture_sites_070126.csv`);
+        csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', `${regionName}_aquaculture_sites_070126.csv`);
         if (!fs.existsSync(csvPath)) {
           // Try alternate filenames
           if (regionName === 'newfoundland') {
-            csvPath = path.join(process.cwd(), 'public', 'canadian_data', 'newfoundland_aquaculture_site_070126.csv');
+            csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', 'newfoundland_aquaculture_site_070126.csv');
           } else if (regionName === 'novascotia') {
-            csvPath = path.join(process.cwd(), 'public', 'canadian_data', 'nova_scotia_aqauaculture_sites_070126.csv');
+            csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', 'nova_scotia_aqauaculture_sites_070126.csv');
           } else if (regionName === 'quebec') {
-            csvPath = path.join(process.cwd(), 'public', 'canadian_data', 'quebec_marine_aquaculture_sites_2017_070126.csv');
+            csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', 'quebec_marine_aquaculture_sites_2017_070126.csv');
           } else if (regionName === 'britishcolumbia') {
-            csvPath = path.join(process.cwd(), 'public', 'canadian_data', 'british_columbia_aquaculture_sites_070126.csv');
+            csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', 'british_columbia_aquaculture_sites_070126.csv');
           } else if (regionName === 'newbrunswick') {
-            csvPath = path.join(process.cwd(), 'public', 'canadian_data', 'new_brunswick_aquaculture_sites_070126.csv');
+            csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data', 'new_brunswick_aquaculture_sites_070126.csv');
           }
         }
         break;
       case 'uk':
       default:
-        csvPath = path.join(process.cwd(), 'public', 'aquaculture-sites.csv');
+        csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'UK_aquaculture_sites', 'aquaculture-sites.csv');
         break;
     }
 
@@ -103,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
  * Load and combine all Canadian province data
  */
 async function handleAllCanadianProvinces(res: NextApiResponse<MapDataResponse>) {
-  const basePath = path.join(process.cwd(), 'public', 'canadian_data');
+  const basePath = path.join(process.cwd(), 'aquaculture_site_data', 'canadian_data');
   const allData: any[] = [];
   
   // Read each province file

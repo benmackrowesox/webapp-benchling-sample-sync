@@ -11,8 +11,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<Icelan
   }
 
   try {
-    // Path to the Iceland CSV file in the public folder
-    const csvPath = path.join(process.cwd(), 'public', 'iceland-sites.csv');
+    // Path to the Iceland CSV file in the aquaculture site data folder
+    const csvPath = path.join(process.cwd(), 'aquaculture_site_data', 'iceland_aquaculture_sites', 'iceland-sites.csv');
     
     // Check if file exists
     if (!fs.existsSync(csvPath)) {
